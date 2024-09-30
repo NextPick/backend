@@ -12,4 +12,12 @@ public class UriCreator {
                 .buildAndExpand(resourceId)
                 .toUri();
     }
+
+    public static URI createUri(String defaultUrl, String uuid) {
+        return UriComponentsBuilder
+                .newInstance()
+                .path(defaultUrl + "/{uuid}")
+                .buildAndExpand(uuid)
+                .toUri();
+    }
 }
