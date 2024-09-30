@@ -66,7 +66,7 @@ public class JwtTokenizer {
     }
 
     // Refresh Token 생성 후 Redis에 저장
-    public String generateRefreshToken(String subject, Date expiration, String base64EncodedSecretKey, String accessToken) {
+    public String generateRefreshToken(String subject, Date expiration, String base64EncodedSecretKey) {
         Key key = getKeyFromBase64EncodedKey(base64EncodedSecretKey);
 
         String refreshToken = Jwts.builder()
