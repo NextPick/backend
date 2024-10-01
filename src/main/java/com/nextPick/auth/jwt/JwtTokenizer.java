@@ -50,19 +50,18 @@ public class JwtTokenizer {
                                       Date expiration,
                                       String base64EncodedSecretKey) {
         Key key = getKeyFromBase64EncodedKey(base64EncodedSecretKey);
-
-        String accessToken = Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
+            return Jwts.builder()
+                    .setClaims(claims)
+                    .setSubject(subject)
+                    .setExpiration(expiration)
+                    .signWith(key)
                 .setIssuedAt(Calendar.getInstance().getTime())
-                .setExpiration(expiration)
-                .signWith(key)
                 .compact();
 
         // Redis에 accessToken 저장
 //        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
 //        valueOperations.set((String) claims.get("username"), accessToken, accessTokenExpirationMinutes, TimeUnit.MINUTES);
-        return accessToken;
+
     }
 
     // Refresh Token 생성 후 Redis에 저장
@@ -71,11 +70,10 @@ public class JwtTokenizer {
 
         String refreshToken = Jwts.builder()
                 .setSubject(subject)
-                .setIssuedAt(Calendar.getInstance().getTime())
                 .setExpiration(expiration)
                 .signWith(key)
+                .setIssuedAt(Calendar.getInstance().getTime())
                 .compact();
-
 
  // Redis에 refreshToken 저장
 //        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
@@ -83,6 +81,8 @@ public class JwtTokenizer {
 
         return refreshToken;
     }
+
+
     public Jws<Claims> getClaims(String jws, String base64EncodedSecretKey) {
         Key key = getKeyFromBase64EncodedKey(base64EncodedSecretKey);
 
@@ -112,8 +112,9 @@ public class JwtTokenizer {
     }
 
     private Key getKeyFromBase64EncodedKey(String base64EncodedSecretKey) {
-        byte[] keyBytes = Decoders.BASE64.decode(base64EncodedSecretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64EncodedSecretKey));
+//        byte[] keyBytes = Decoders.BASE64.decode(base64EncodedSecretKey);
+//        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     // Redis에서 Access Token 및 Refresh Token 삭제 (로그아웃 시 사용)
