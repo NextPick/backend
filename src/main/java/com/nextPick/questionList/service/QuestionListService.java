@@ -19,11 +19,10 @@ public class QuestionListService {
         Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
         String strToAnalyze = "Persist는 JPA에서 엔티티를 영속성 컨텍스트에 저장하는 행위를 의미합니다. 이는 데이터베이스에 해당 엔티티가 저장된다는 것을 보장하며, 영속성 컨텍스트에서 관리되기 시작합니다.";
         String strToAnalyze2 = "Persist는 JPA에서 영속성 컨텍스트에 엔티티를 저장하는 행위입니다. 영속성 컨텍스트에서 관리되며, 데이터베이스에 엔티티가 저장된다는 것을 보장합니다.";
-        String strToAnalyze3 = "싱글톤 패턴은 전역 상태를 공유하기 때문에, 테스트하기 어렵고 의존성이 강해질 수 있습니다. 또한, 멀티스레드 환경에서는 동기화를 신경 써야 합니다.";
+        String strToAnalyze3 = "heap은 동적으로 할당된 객체가 저장되는 영역으로, 모든 thread가 공유하며, Stack은 method 호출과 관련된 변수들이 저장되는 영역으로 각 thread마다 독립적으로 관리됩니다.";
         List<String> keywords = new ArrayList<>();
-        keywords.add("A와 E가 B로 느리게 저장되고 C으로 D가 빠르게 저장됨");
-        keywords.add("엔티티를 영속성 컨텍스트에 저장");
-        keywords.add("엔티티가 데이터베이스에 저장되는 것을 보장");
+        keywords.add("heap은 동적으로 할당된 객체가 저장되는 영역이다.");
+        keywords.add("stack은 method 호출과 관련된 변수들이 저장되는 영역이다.");
 
         List<String> NNRelated = new ArrayList<>();
 
@@ -78,9 +77,7 @@ public class QuestionListService {
                         }
                         break;
                 }
-//                System.out.format("[keywords] %s/%s\n", token.getMorph(), token.getPos());
             }
-//                System.out.format("[keywords] %s/%s\n", token.getMorph(), token.getPos());
             }
             System.out.format("[keywords-translation] %s\n", translation);
             System.out.println(keyword);
