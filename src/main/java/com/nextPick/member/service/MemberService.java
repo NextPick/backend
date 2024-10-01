@@ -32,8 +32,8 @@ public class MemberService extends ExtractMemberAndVerify {
         return memberRepository.save(member);
     }
 
-    public Member findMember(Object principal){
-        return extractMemberFromPrincipal(principal,memberRepository);
+    public Member findMember(){
+        return extractMemberFromPrincipal(memberRepository);
     }
 
 //    public Member updateMember(MemberDto.Patch member,Object principal) {
@@ -51,8 +51,8 @@ public class MemberService extends ExtractMemberAndVerify {
 //        return memberRepository.save(findMember);
 //    }
 
-    public void deleteMember(Object principal) {
-        Member member = extractMemberFromPrincipal(principal, memberRepository);
+    public void deleteMember() {
+        Member member = extractMemberFromPrincipal(memberRepository);
         member.setStatus(Member.memberStatus.DELETED);
         memberRepository.save(member);
     }
