@@ -22,8 +22,7 @@ public class ParticipantService extends ExtractMemberAndVerify {
     private final MemberRepository memberRepository;
 
     public Participant createParticipant(Participant participant) {
-        Member member = extractMemberFromPrincipal(
-                SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(), memberRepository);
+        Member member = extractMemberFromPrincipal(memberRepository);
         participant.setMember(member);
         participant.setRoom(roomService.findRoomByUuid(participant.getRoom().getUuid()));
 

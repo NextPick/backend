@@ -8,6 +8,5 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ParticipantMapper {
     @Mapping(source = "uuid", target = "room.uuid")
-    @Mapping(source = "memberId", target = "member.memberId")
     Participant participantDtoPostToParticipant(ParticipantDto.Post requestBody);
 }

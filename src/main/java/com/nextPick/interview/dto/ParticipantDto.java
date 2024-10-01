@@ -8,7 +8,6 @@ public class ParticipantDto {
     @Getter
     @AllArgsConstructor
     public static class Post {
-        private Long memberId;
         @Setter
         private String uuid;
     }

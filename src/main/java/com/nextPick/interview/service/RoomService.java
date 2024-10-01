@@ -5,9 +5,12 @@ import com.nextPick.exception.ExceptionCode;
 import com.nextPick.interview.entity.Room;
 import com.nextPick.interview.repository.RoomRepository;
 import com.nextPick.member.entity.Member;
+import com.nextPick.member.repository.MemberRepository;
 import com.nextPick.member.service.MemberService;
+import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,12 +18,14 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class RoomService {
+public class RoomService extends ExtractMemberAndVerify {
     private final RoomRepository roomRepository;
     private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
     public Room createRoom(Room room) {
-       Member member = memberService.findMember(room.getMember());
+       Member member = extractMemberFromPrincipal(memberRepository);
+
        room.setMember(member);
        log.info(room.getUuid());
        return roomRepository.save(room);

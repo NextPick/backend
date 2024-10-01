@@ -7,7 +7,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface RoomMapper {
-    @Mapping(source = "memberId", target = "member.memberId")
     Room roomDtoPostToRoom(RoomDto.Post requestBody);
 
     default RoomDto.Response roomsCountToRoomDtoResponse(Long roomsCount) {

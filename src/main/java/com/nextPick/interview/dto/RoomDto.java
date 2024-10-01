@@ -8,7 +8,7 @@ public class RoomDto {
     @AllArgsConstructor
     public static class Post {
         private String title;
-        private Long memberId;
+        private String email;
     }
 
     @Getter
