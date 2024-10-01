@@ -44,7 +44,7 @@ public class MemberDto {
     @NoArgsConstructor
     public static class Patch {
         @Setter
-        private long memberId;
+        private String email;
 
         @Size(min = 8, max = 20, message = "비밀번호는 8자에서 20자 사이여야 합니다.")
         @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?`~]+$",
