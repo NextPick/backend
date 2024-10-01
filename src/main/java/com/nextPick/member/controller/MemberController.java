@@ -69,8 +69,8 @@ public class MemberController {
     }
 
     @GetMapping
-    public ResponseEntity getMember(@AuthenticationPrincipal Object principal) {
-        Member findMember = service.findMember(principal);
+    public ResponseEntity getMember() {
+        Member findMember = service.findMember();
         return new ResponseEntity<>(
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
@@ -85,22 +85,20 @@ public class MemberController {
 //    }
 
     @DeleteMapping
-    public ResponseEntity deleteMember(@AuthenticationPrincipal Object principal) {
-        service.deleteMember(principal.toString());
+    public ResponseEntity deleteMember() {
+        service.deleteMember();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/verify/email")
-    public ResponseEntity emailDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationEmailCheck duplicationEmailCheck,
-                                                 @AuthenticationPrincipal Object principal) {
+    public ResponseEntity emailDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationEmailCheck duplicationEmailCheck) {
         return service.dupCheckEmail(duplicationEmailCheck.getEmail()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
     @PostMapping("/verify/nickname")
-    public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck,
-                                                    @AuthenticationPrincipal Object principal){
+    public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck){
         return service.dupCheckEmail(duplicationNicknameCheck.getNickName()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
