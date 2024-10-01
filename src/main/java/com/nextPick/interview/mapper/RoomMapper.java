@@ -10,7 +10,8 @@ public interface RoomMapper {
     Room roomDtoPostToRoom(RoomDto.Post requestBody);
 
     default RoomDto.Response roomsCountToRoomDtoResponse(Long roomsCount) {
-        RoomDto.Response response = new RoomDto.Response(roomsCount);
+        RoomDto.Response response = new RoomDto.Response();
+        response.setRoom_count(roomsCount);
 
         return response;
     }

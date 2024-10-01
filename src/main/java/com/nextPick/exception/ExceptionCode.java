@@ -1,5 +1,6 @@
 package com.nextPick.exception;
 
+import com.nextPick.interview.entity.Participant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -17,7 +18,10 @@ public enum ExceptionCode {
     TOKEN_INVALID(403, "토큰값이 유효하지 않습니다."),
 
     // room
-    ROOM_NOT_FOUND(404, "Room Not Found");
+    ROOM_NOT_FOUND(404, "Room Not Found"),
+
+    // participant
+    PARTICIPANT_NOT_FOUND(404, "Participant Not Found");
 
     @Getter
     private int statusCode;
