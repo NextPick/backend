@@ -1,7 +1,9 @@
 package com.nextPick.interview.controller;
 
+import com.nextPick.dto.SingleResponseDto;
 import com.nextPick.interview.dto.ParticipantDto;
 import com.nextPick.interview.entity.Participant;
+import com.nextPick.interview.entity.Room;
 import com.nextPick.interview.mapper.ParticipantMapper;
 import com.nextPick.interview.service.ParticipantService;
 import com.nextPick.utils.UriCreator;
@@ -24,19 +26,24 @@ public class ParticipantController {
     private final ParticipantMapper mapper;
 
     @PostMapping
-    public void postParticipant(@PathVariable String uuid,
-                                @Valid @RequestBody ParticipantDto.Post requestBody) {
-        requestBody.setUuid(uuid);
-        Participant participant = mapper.participantDtoPostToParticipant(requestBody);
-        Participant createParticipant = service.createParticipant(participant);
+    public ResponseEntity postParticipant(@PathVariable String uuid) {
+        Participant createParticipant = service.createParticipant(uuid);
+
+        String PARTICIPANT_URL = "/rooms/" + uuid + "/participants";
+        URI location = UriCreator.createUri(PARTICIPANT_URL, createParticipant.getParticipantId());
+
+        return ResponseEntity.created(location).build();
+    }
+
+    @GetMapping
+    public ResponseEntity getParticipants(@PathVariable String uuid) {
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(mapper.participantListToParticipantDtoList(service.findParticipants(uuid))), HttpStatus.OK);
     }
 
     @DeleteMapping
-    public ResponseEntity deleteParticipant(@PathVariable String uuid,
-                                  @Valid @RequestBody ParticipantDto.Post requestBody) {
-        requestBody.setUuid(uuid);
-        Participant participant = mapper.participantDtoPostToParticipant(requestBody);
-        service.deleteParticipant(participant);
+    public ResponseEntity deleteParticipant(@PathVariable String uuid) {
+        service.deleteParticipant(uuid);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
