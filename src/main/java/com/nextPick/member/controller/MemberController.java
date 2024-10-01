@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @Validated
-@RequestMapping
+@RequestMapping("/members")
 @RequiredArgsConstructor
 public class MemberController {
     private final static String MEMBER_DEFAULT_URL = "/members";
@@ -59,7 +60,7 @@ public class MemberController {
      *
      * @return 201 : Created  & 409 : Conflict
      */
-    @PostMapping("/member")
+    @PostMapping
     public ResponseEntity createMember(@Valid @RequestBody MemberDto.Post memberDto) {
         Member member = memberMapper.memberPostToMember(memberDto);
         service.createMember(member);
@@ -67,29 +68,26 @@ public class MemberController {
         return ResponseEntity.created(location).build();
     }
 
-    @GetMapping("/member")
-    public ResponseEntity getMember() {
-        Member member = new Member();
-        Member findMember = service.findMember(member);
+    @GetMapping
+    public ResponseEntity getMember(@AuthenticationPrincipal Object principal) {
+        Member findMember = service.findMemberByEmail(principal.toString());
         return new ResponseEntity<>(
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
 
-    @PatchMapping("/members")
-    public ResponseEntity patchMember(@Valid @RequestBody MemberDto.Patch patch) {
-
+    @PatchMapping
+    public ResponseEntity patchMember(@Valid @RequestBody MemberDto.Patch patch,
+                                      @AuthenticationPrincipal Object principal) {
+        patch.setEmail(principal.toString());
         Member member = service.updateMember(patch);
-
         return new ResponseEntity<>(
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
     }
 
-    @DeleteMapping("/members")
-    public ResponseEntity deleteMember() {
-        Member member = new Member();
-        service.deleteMember(member);
+    @DeleteMapping
+    public ResponseEntity deleteMember(@AuthenticationPrincipal Object principal) {
+        service.deleteMember(principal.toString());
 //        service.deleteMember(authentication);
-
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
