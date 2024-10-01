@@ -70,36 +70,37 @@ public class MemberController {
 
     @GetMapping
     public ResponseEntity getMember(@AuthenticationPrincipal Object principal) {
-        Member findMember = service.findMemberByEmail(principal.toString());
+        Member findMember = service.findMember(principal);
         return new ResponseEntity<>(
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
 
-    @PatchMapping
-    public ResponseEntity patchMember(@Valid @RequestBody MemberDto.Patch patch,
-                                      @AuthenticationPrincipal Object principal) {
-        patch.setEmail(principal.toString());
-        Member member = service.updateMember(patch);
-        return new ResponseEntity<>(
-                new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
-    }
+//    @PatchMapping
+//    public ResponseEntity patchMember(@Valid @RequestBody MemberDto.Patch patch,
+//                                      @AuthenticationPrincipal Object principal) {
+//        patch.setEmail(principal.toString());
+//        Member member = service.updateMember(patch,principal);
+//        return new ResponseEntity<>(
+//                new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
+//    }
 
     @DeleteMapping
     public ResponseEntity deleteMember(@AuthenticationPrincipal Object principal) {
         service.deleteMember(principal.toString());
-//        service.deleteMember(authentication);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/members/verify/email")
-    public ResponseEntity emailDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationEmailCheck duplicationEmailCheck) {
+    @PostMapping("/verify/email")
+    public ResponseEntity emailDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationEmailCheck duplicationEmailCheck,
+                                                 @AuthenticationPrincipal Object principal) {
         return service.dupCheckEmail(duplicationEmailCheck.getEmail()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
-    @PostMapping("/members/verify/nickname")
-    public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck){
+    @PostMapping("/verify/nickname")
+    public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck,
+                                                    @AuthenticationPrincipal Object principal){
         return service.dupCheckEmail(duplicationNicknameCheck.getNickName()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
