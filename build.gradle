@@ -26,9 +26,11 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
+	implementation 'com.github.shin285:KOMORAN:3.3.9'
 
 	//Spring Boot
 //	implementation 'org.springframework.boot:spring-boot-starter-mail'
@@ -40,8 +42,7 @@ dependencies {
 	//AWS
 //	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
-	//DB - h2
-//	runtimeOnly 'com.h2database:h2'
+	//KOMORAN
 
 	//DB - Mysql
 	implementation 'mysql:mysql-connector-java:8.0.32'
