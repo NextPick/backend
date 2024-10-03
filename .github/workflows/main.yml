@@ -2,9 +2,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches:
-      - dev
-      - main
+    branches: [ main ]
 
 jobs:
   build:
@@ -25,6 +23,35 @@ jobs:
       - name: Docker build
         run: |
           docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker build -t spring-cicd .
-          docker tag spring-cicd chaeyeon1234/spring-cicd:${GITHUB_SHA::7}
-          docker push chaeyeon1234/spring-cicd:${GITHUB_SHA::7}
+          docker build -t next-pick .
+          docker tag next-pick chaeyeon1234/next-pick:${GITHUB_SHA::7}
+          docker push chaeyeon1234/next-pick:${GITHUB_SHA::7}
+      #위 내용은 지속적 통합을 위한 스크립트입니다.
+      #지속적 통합을 위한 스크립트 아래에 작성합니다.
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+      - name: Start Session Manager session
+        run: aws ssm start-session --target i-0ab669f63668cac91
+      - name: Deploy to Server
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
+        run: |
+          aws ssm send-command \
+            --instance-ids i-0ab669f63668cac91 \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[
+              'if sudo docker ps -a --format \\'{{.Names}}\\' | grep -q \\'^server$\\'; then',
+              '  sudo docker stop server',
+              '  sudo docker rm server',
+              'fi',
+              'sudo docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}',
+              'sudo docker tag chaeyeon1234/next-pick:${GITHUB_SHA::7} next-pick',
+              'sudo docker run -d --name server -p 8080:8080 next-pick'
+            ]" \
+            --output text
