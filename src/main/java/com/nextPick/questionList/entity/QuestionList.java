@@ -34,7 +34,6 @@ public class QuestionList {
     private int correctRate = 0;
 
     @OneToOne
-    @JoinColumn(name = "question_category_id")
-    @JsonManagedReference
+    @JoinColumn(name = "question_category_id") // 외래 키 컬럼 이름 지정
     private QuestionCategory questionCategory;
 }

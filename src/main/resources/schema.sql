@@ -1,0 +1,2 @@
+ALTER TABLE question_category DROP FOREIGN KEY question_list_question_list_id;
+ALTER TABLE question_category DROP COLUMN question_list_question_list_id;

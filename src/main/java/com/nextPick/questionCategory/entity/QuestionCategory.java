@@ -20,8 +20,7 @@ public class QuestionCategory {
     @Column(name = "categoryName", nullable = false)
     private String categoryName;
 
-    @OneToOne
-    @JsonManagedReference
-    private QuestionList questionList;
-
+//    @OneToOne
+//    @JsonManagedReference
+//    private QuestionList questionList;
 }

@@ -23,7 +23,7 @@ public class QuestionListController {
     @PostMapping
     public ResponseEntity komoranTest(@Valid @RequestBody QuestionListDto.answerCheck answerCheck) {
         String answer = answerCheck.getAnswer();
-        service.komoranTestService(answer);
+//        service.komoranTestService(answer);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
