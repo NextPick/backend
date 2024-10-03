@@ -1,5 +1,7 @@
 package com.nextPick.questionList.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.nextPick.questionCategory.entity.QuestionCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,4 +32,9 @@ public class QuestionList {
 
     @Column(name = "correct_rate", nullable = false)
     private int correctRate = 0;
+
+    @OneToOne
+    @JoinColumn(name = "question_category_id")
+    @JsonManagedReference
+    private QuestionCategory questionCategory;
 }
