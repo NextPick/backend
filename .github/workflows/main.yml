@@ -43,19 +43,19 @@ jobs:
           aws ssm send-command \
             --instance-ids i-0ab669f63668cac91 \
             --document-name "AWS-RunShellScript" \
-            --parameters "commands=[ 
-              'if sudo docker ps -a --format \\'{{.Names}}\\' | grep -q \\'^mysql$\\'; then',
-              '  sudo docker stop mysql',
-              '  sudo docker rm mysql',
-              'fi',
-              'sudo docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=cheche0804!B -e MYSQL_DATABASE=nextpick -p 3306:3306 mysql:8.0',
-              'sleep 30', # MySQL 서버가 준비될 시간을 주기 위해 대기
-              'if sudo docker ps -a --format \\'{{.Names}}\\' | grep -q \\'^server$\\'; then',
-              '  sudo docker stop server',
-              '  sudo docker rm server',
-              'fi',
-              'sudo docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}',
-              'sudo docker tag chaeyeon1234/next-pick:${GITHUB_SHA::7} next-pick',
-              'sudo docker run -d --name server -p 8080:8080 --link mysql:db next-pick'
-            ]" \
+            --parameters '{"commands": [
+              "if sudo docker ps -a --format \"{{.Names}}\" | grep -q \"^mysql$\"; then",
+              "  sudo docker stop mysql",
+              "  sudo docker rm mysql",
+              "fi",
+              "sudo docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=cheche0804!B -e MYSQL_DATABASE=nextpick -p 3306:3306 mysql:8.0",
+              "sleep 30", # MySQL 서버가 준비될 시간을 주기 위해 대기
+              "if sudo docker ps -a --format \"{{.Names}}\" | grep -q \"^server$\"; then",
+              "  sudo docker stop server",
+              "  sudo docker rm server",
+              "fi",
+              "sudo docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}",
+              "sudo docker tag chaeyeon1234/next-pick:${GITHUB_SHA::7} next-pick",
+              "sudo docker run -d --name server -p 8080:8080 --link mysql:db next-pick"
+            ]}' \
             --output text
