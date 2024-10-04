@@ -1,4 +1,4 @@
-package com.nextPick.utils;
+package com.nextPick.questionList.controller.utils;
 
 import org.springframework.web.util.UriComponentsBuilder;
 

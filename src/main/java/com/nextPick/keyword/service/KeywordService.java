@@ -3,7 +3,7 @@ package com.nextPick.keyword.service;
 import com.nextPick.keyword.entity.Keyword;
 import com.nextPick.keyword.repository.KeywordRepository;
 import com.nextPick.questionList.entity.QuestionList;
-import com.nextPick.utils.ExtractMemberAndVerify;
+import com.nextPick.questionList.controller.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

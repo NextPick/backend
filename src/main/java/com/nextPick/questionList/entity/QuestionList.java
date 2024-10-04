@@ -1,12 +1,15 @@
 package com.nextPick.questionList.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.nextPick.keyword.entity.Keyword;
 import com.nextPick.questionCategory.entity.QuestionCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity(name = "question_list")
 @Getter
@@ -33,7 +36,12 @@ public class QuestionList {
     @Column(name = "correct_rate", nullable = false)
     private int correctRate = 0;
 
-    @OneToOne
+    @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "question_category_id") // 외래 키 컬럼 이름 지정
     private QuestionCategory questionCategory;
+
+    @OneToMany
+    @JsonManagedReference
+    private List<Keyword> keywords;
 }
