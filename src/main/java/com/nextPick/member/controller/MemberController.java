@@ -5,22 +5,15 @@ import com.nextPick.member.dto.MemberDto;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.mapper.MemberMapper;
 import com.nextPick.member.service.MemberService;
-import com.nextPick.utils.UriCreator;
+import com.nextPick.questionList.controller.utils.UriCreator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Positive;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @Validated

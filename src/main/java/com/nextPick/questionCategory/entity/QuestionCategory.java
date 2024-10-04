@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity(name = "question_category")
 @Getter
@@ -20,7 +21,7 @@ public class QuestionCategory {
     @Column(name = "categoryName", nullable = false)
     private String categoryName;
 
-//    @OneToOne
-//    @JsonManagedReference
-//    private QuestionList questionList;
+    @OneToMany
+    @JsonManagedReference
+    private List<QuestionList> questionLists;
 }

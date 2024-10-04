@@ -1,4 +1,4 @@
-package com.nextPick.utils;
+package com.nextPick.questionList.controller.utils;
 
 import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;
