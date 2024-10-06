@@ -44,13 +44,19 @@ public class QuestionListService {
             return false;
 
         //사용자 응답 분석 ( 형태소 분석 + 맥락 분석 + 단어 간 관계도)
-        Map<String, Stack<String>> userResponseMorphemeAnalysis = userMorphemeAnalysis(userResponse,keywordSet);
+        Map<String, Stack<String>> userResponseMorpheme = userMorphemeAnalysis(userResponse,keywordSet);
 
         //DB 정답 분석 ( 형태소 분석 + 맥락 분석 + 단어 간 관계도)
-        Map<String, Stack<String>> databaseCorrectMorphemeAnalysis = databaseMorphemeAnalysis(correctContexts,keywordSet);
+        Map<String, Stack<String>> databaseCorrectMorpheme = databaseMorphemeAnalysis(correctContexts,keywordSet);
+
+        //사용자 응답 심화 분석 ( 단어 간 관계도 역전 및 정규화 )
+        Map<String, Stack<String>> userResponseDeep = userResponseDeepAnalysis(userResponseMorpheme);
+
+        //DB 정답 심화 분석 ( 단어 간 관계도 역전 및 정규화 )
+        Map<String, Stack<String>> databaseResponseDeep = userResponseDeepAnalysis(databaseCorrectMorpheme);
 
         //사용자 응답과 DB 정답 비교 후 일치율 파악
-        boolean isCorrect = matchRateScoring(databaseCorrectMorphemeAnalysis,userResponseMorphemeAnalysis,keywordSet);
+        boolean isCorrect = matchRateScoring(databaseResponseDeep,userResponseDeep,keywordSet);
 
 
 //        Map<String, List<String>> extractedAttributes = extractKeywordsAttributes(userResponse, question.getKeywords());
@@ -280,6 +286,234 @@ public class QuestionListService {
         return result;
     }
 
+    private Map<String,Stack<String>> userResponseDeepAnalysis(Map<String,Stack<String>> userResponseMorpheme) {
+        Stack<String> deepAnalysis = new Stack<>();
+        Map<String,Stack<String>> result = new HashMap<>();
+
+        for (Map.Entry<String, Stack<String>> entry : userResponseMorpheme.entrySet()) {
+            String key = entry.getKey();
+            Stack<String> originalStack = entry.getValue();
+
+            // 1. 기본 변환 수행
+            Stack<String> transformedStack = transformStack(originalStack);
+
+            // 2. 심화 변환 수행
+            Stack<String> deepTransformedStack = deepTransformStack(transformedStack);
+
+            // 결과 맵에 추가
+            result.put(key, deepTransformedStack);
+        }
+        return result;
+    }
+
+    /**
+     * 주어진 Stack<String>을 변환하여 새로운 Stack<String>을 반환합니다.
+     *
+     * 변환 규칙:
+     * - "/"를 만나면 현재까지 모은 단어들을 하나의 단어로 합칩니다.
+     * - ">" 또는 "<"를 만나면 이전 단어와 결합하여 새로운 단어로 만듭니다.
+     *
+     * @param originalStack 원본 스택
+     * @return 변환된 스택
+     */
+    private Stack<String> transformStack(Stack<String> originalStack) {
+        Stack<String> resultStack = new Stack<>();
+        StringBuilder currentWord = new StringBuilder();
+        boolean insideAngleBrackets = false;
+
+        // Stack을 리스트로 변환하여 순차적으로 접근
+        Iterator<String> iterator = originalStack.iterator();
+
+        while (iterator.hasNext()) {
+            String token = iterator.next();
+
+            switch (token) {
+                case "/":
+                    if (insideAngleBrackets) {
+                        // '<'와 '>' 사이에서는 '/'를 쉼표로 대체
+                        currentWord.append(", ");
+                    } else {
+                        // '/'는 단어 구분자로 사용
+                        if (currentWord.length() > 0) {
+                            resultStack.push(currentWord.toString());
+                            currentWord.setLength(0); // StringBuilder 초기화
+                        }
+                    }
+                    break;
+
+                case "<":
+                case ">":
+                    if (token.equals("<")) {
+                        insideAngleBrackets = true;
+                    } else if (token.equals(">")) {
+                        insideAngleBrackets = false;
+                    }
+                    // '<' 또는 '>'를 현재 단어에 추가
+                    currentWord.append(token);
+                    break;
+
+                default:
+                    // 일반 단어는 현재 단어에 추가
+                    currentWord.append(token);
+                    break;
+            }
+        }
+
+        // 마지막으로 남은 단어가 있다면 스택에 추가
+        if (currentWord.length() > 0) {
+            resultStack.push(currentWord.toString());
+        }
+
+        System.out.println("[transformStack]" + resultStack);
+        return resultStack;
+    }
+
+    /**
+     * 변환된 Stack<String>을 심화 분석하여 추가적인 변환을 수행합니다.
+     *
+     * 심화 변환 규칙:
+     * 1. 문자열에 '<' 또는 '>'가 두 개 이상 포함된 경우 분해.
+     *    예: "keyword<field>선언" → "keyword<field", "field>선언"
+     * 2. 문자열이 "없"인 경우, 이전 문자열을 분해.
+     *    예: ["상태>변경", "없"] → ["상태>변경", "변경", "없"]
+     *
+     * @param transformedStack 변환된 스택
+     * @return 심화 변환된 스택
+     */
+    private Stack<String> deepTransformStack(Stack<String> transformedStack) {
+        Stack<String> resultStack = new Stack<>();
+        List<String> tokens = new ArrayList<>(transformedStack);
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+
+            // 1. 문자열에 '<' 또는 '>'가 두 개 이상 포함된 경우 분해
+            if ((countOccurrences(token, "<") + countOccurrences(token, ">")) >= 2) {
+                String[] splitParts = splitAtLastSymbol(token);
+                if (splitParts != null) {
+                    resultStack.push(splitParts[0]);
+                    resultStack.push(splitParts[1]);
+                    continue;
+                }
+            }
+
+            // 2. 현재 토큰이 "없"또는 "있" 인 경우 이전 토큰을 분해
+            if ((token.equals("없") || token.equals("있")) && !resultStack.isEmpty()) {
+                String previous = resultStack.pop();
+                String[] splitParts = splitAtLastSymbolForEmpty(previous);
+                if (splitParts != null) {
+                    resultStack.push(splitParts[0]); // 전체 이전 토큰
+                    resultStack.push(splitParts[1]); // 분해된 부분
+                }
+                resultStack.push(token); // "없" 또는 "있" 추가
+                continue;
+            }
+
+            // 기본적으로 토큰을 추가
+            resultStack.push(token);
+        }
+
+        System.out.println("[deepTransformStack]" + resultStack);
+        return resultStack;
+    }
+
+    /**
+     * 문자열 내 특정 문자열의 개수를 셉니다.
+     *
+     * @param str 문자열
+     * @param sub 서브 문자열
+     * @return 개수
+     */
+    private int countOccurrences(String str, String sub) {
+        int count = 0;
+        int idx = 0;
+        while ((idx = str.indexOf(sub, idx)) != -1) {
+            count++;
+            idx += sub.length();
+        }
+        return count;
+    }
+
+    /**
+     * 문자열 내 마지막 '<' 또는 '>' 기호에서 분리합니다.
+     *
+     * 예: "keyword<field>선언" → ["keyword<field", "field>선언"]
+     *
+     * @param str 문자열
+     * @return 분리된 두 부분의 배열
+     */
+    private String[] splitAtLastSymbol(String str) {
+        int lastLt = str.lastIndexOf("<");
+        int lastGt = str.lastIndexOf(">");
+
+        if (lastLt == -1 && lastGt == -1) {
+            return null;
+        }
+
+        if (lastGt > lastLt) {
+            // 마지막 기호가 '>'
+            int lastLtBeforeGt = str.lastIndexOf("<", lastGt);
+            if (lastLtBeforeGt == -1) {
+                // '<'가 없으면 '>'에서만 분리
+                String firstPart = str.substring(0, lastGt);
+                String secondPart = str.substring(lastGt, str.length());
+                return new String[]{firstPart, secondPart};
+            } else {
+                String firstPart = str.substring(0, lastGt);
+                String secondPart = str.substring(lastLtBeforeGt + 1, str.length());
+                return new String[]{firstPart, secondPart};
+            }
+        } else {
+            // 마지막 기호가 '<'인 경우
+            int lastGtBeforeLt = str.lastIndexOf(">", lastLt);
+            if (lastGtBeforeLt == -1) {
+                // '>'가 없으면 '<'에서만 분리
+                String firstPart = str.substring(0, lastLt);
+                String secondPart = str.substring(lastLt, str.length());
+                return new String[]{firstPart, secondPart};
+            } else {
+                // 다른 경우는 현재 로직으로 처리하지 않음
+                return null;
+            }
+        }
+    }
+
+    /**
+     * "없"인 경우 이전 문자열을 분해합니다.
+     * 예: "상태>변경" → ["상태>변경", "변경"]
+     *
+     * @param str 이전 문자열
+     * @return 분리된 두 부분의 배열
+     */
+    private String[] splitAtLastSymbolForEmpty(String str) {
+        // 예: "상태>변경" → "상태>변경", "변경"
+        int lastGt = str.lastIndexOf(">");
+        int lastLt = str.lastIndexOf("<");
+
+        if (lastGt == -1 && lastLt == -1) {
+            return null;
+        }
+
+        if (lastGt > lastLt) {
+            // 마지막 기호가 '>'
+            String firstPart = str; // 전체 문자열 유지
+            String secondPart = str.substring(lastGt + 1, str.length());
+            if (secondPart.isEmpty()) {
+                // '>' 다음에 아무것도 없으면 분리하지 않음
+                return null;
+            }
+            return new String[]{firstPart, secondPart};
+        } else {
+            // 마지막 기호가 '<'
+            String firstPart = str;
+            String secondPart = str.substring(lastLt + 1, str.length());
+            if (secondPart.isEmpty()) {
+                return null;
+            }
+            return new String[]{firstPart, secondPart};
+        }
+    }
+
     private boolean matchRateScoring(Map<String,Stack<String>> dbAnswer, Map<String,Stack<String>> userAnswer,List<String> keywords) {
         for (String keyword : keywords) {
             Stack<String> dbAnswerStack = dbAnswer.get(keyword);
@@ -305,6 +539,8 @@ public class QuestionListService {
         }
         return true;
     }
+
+
 //
 //    private boolean checkCorrect(String userAnswer,List<String> keywordDescriptions,List<String> keywords,Komoran komoran){
 //        List<String> userAnswerSplitString = morphemeAnalysis(userAnswer,komoran);
