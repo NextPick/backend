@@ -150,73 +150,6 @@ public class QuestionListService {
         return true;
     }
 
-//    public void komoranTestService(String s) {
-//        Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
-//        komoran.setUserDic("./userCostomDic.dic");
-//        String correctAnswer = "Immutable 객체는 상 태를 변경할 수 없는 객체를 의미합니다. " +
-//                "이러한 객체는 생성된 이후 내부 상태를 수정할 수 없으며, 주로 final keyword로 field를 선언하여 불변성을 보장합니다. " +
-//                "대표적인 예로 String class가 있으며, 이 객체는 한 번 생성되면 변경할 수 없습니다.";
-//        String userAnswer = "Immutable 객체는 상태를 변경할 수 없는 객체를 의미합니다. " +
-//                "이러한 객체는 생성된 이후 내부 상태를 수정할 수 없으며, 주로 final keyword로 field를 선언하여 불변성을 보장합니다. " +
-//                "대표적인 예로 String class가 있으며, 이 객체는 한 번 생성되면 변경할 수 없습니다.";
-//
-//        List<String> keywords = new ArrayList<>();
-//        keywords.add("불변성");
-//
-//        List<String> keywordDescriptions = new ArrayList<>();
-//        keywordDescriptions.add("객체를 수정할 수 없다.");
-//        keywordDescriptions.add("객체를 변경할 수 없다.");
-//
-//        boolean result = checkCorrect(userAnswer,keywordDescriptions,keywords,komoran);
-//
-//        Stack<String> stack = new Stack<>();
-//
-//        for(String keyword : keywordDescriptions){
-//            KomoranResult analyzeResultList = komoran.analyze(keyword);
-//            List<Token> tokenList = analyzeResultList.getTokenList();
-//            boolean doubleNNG = false;
-//            for (int i = 0; i < tokenList.size(); i++){
-//                Token token = tokenList.get(i);
-//                // 분석해야 하는 형태소라면은..?
-//                switch (token.getPos()){
-//                    case "JKS": // 가
-//                    case "JKO": // 를, 은, 는 '>'
-//                        doubleNNG = false;
-//                        stack.pop();
-//                        stack.push(">"); break;
-//                    case "JC":  // 와 '&'
-//                        doubleNNG = false;
-//                        stack.pop();
-//                        stack.push("&"); break;
-//                    case "JKB": // 에서, 에, 으로 '<'
-//                        doubleNNG = false;
-//                        stack.pop();
-//                        stack.push("<"); break;
-//                    case "VV":  // 동사
-//                    case "VA":  // 형용사
-//                        doubleNNG = false;
-//                        stack.push(token.getMorph());
-//                        stack.push("/");
-//                        break;
-//                    case "NNG": // 일반 명사
-//                    case "NNP": // 고유 명사
-//                    case "SL":  // 외국어
-//                        if(doubleNNG)
-//                            stack.pop();
-//                        stack.push(token.getMorph());
-//                        stack.push("/");
-//                        doubleNNG = true;
-//                        break;
-//                    default:
-//                        doubleNNG = false;
-//                }
-//            }
-//            System.out.format("[keywordDescription-translation] %s\n", stack);
-//            System.out.println(keyword);
-//        }
-//
-//
-//    }
     private Map<String,Stack<String>> databaseMorphemeAnalysis(List<String> wordExplains, List<String> keywordList) {
         Stack<String> stack = new Stack<>();
         Map<String,Stack<String>> result = new HashMap<>();
@@ -224,12 +157,12 @@ public class QuestionListService {
         Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
         komoran.setUserDic("src/main/resources/userCustomDic.txt");
         for (int i = 0; i < keywordList.size(); i++) {
-            if(wordExplains.get(i).isEmpty())
+            if(wordExplains.get(i) == null)
                 continue;
             KomoranResult analyzeResultList = komoran.analyze(wordExplains.get(i));
             List<Token> tokenList = analyzeResultList.getTokenList();
             for (int j = 0; j < tokenList.size(); j++){
-                Token token = tokenList.get(i);
+                Token token = tokenList.get(j);
                 // 분석해야 하는 형태소라면은..?
                 switch (token.getPos()) {
                     case "JKS": // 가
@@ -261,10 +194,20 @@ public class QuestionListService {
                     default:
                 }
             }
-            System.out.println("[databaseMorphemeAnalysis] sentenceTitle : "+keywordList.get(i));
-            System.out.println("[databaseMorphemeAnalysis] queue : "+stack);
-            result.put(keywordList.get(i),stack);
+            Stack<String> newStack = new Stack<>();
+            newStack.addAll(stack); // 기존 stack의 내용을 새로운 stack에 복사
             stack.clear();
+            System.out.println("\u001B[34m" + "[databaseMorphemeAnalysis] sentenceTitle : " + keywordList.get(i));
+            // key값이 중복된다면.. 합친다.
+            if (result.containsKey(keywordList.get(i))) {
+                Stack<String> existingStack = result.get(keywordList.get(i));
+                stack = mergeStacks(existingStack,newStack);
+                System.out.println("[databaseMorphemeAnalysis] stack : " + stack + "\u001B[0m");
+                result.put(keywordList.get(i),stack);
+            }else{
+                System.out.println("[databaseMorphemeAnalysis] stack : " + newStack + "\u001B[0m");
+                result.put(keywordList.get(i),newStack);
+            }
         }
         return result;
     }
@@ -279,11 +222,13 @@ public class QuestionListService {
         KomoranResult analyzeResultList = komoran.analyze(userAnswer);
         List<Token> tokenList = analyzeResultList.getTokenList();
 
-        String sentenceTitle = "";
+        List<String> sentenceTitles = new ArrayList<>();
         for (int i = 0; i < tokenList.size(); i++) {
             Token token = tokenList.get(i);
-            if(keywordList.contains(token.getMorph()))
-                sentenceTitle = token.getMorph();
+            if(keywordList.contains(token.getMorph())) {
+                if(!sentenceTitles.contains(token.getMorph()))
+                    sentenceTitles.add(token.getMorph());
+            }
             // 분석해야 하는 형태소라면은..?
             switch (token.getPos()) {
                 case "JKS": // 가
@@ -311,15 +256,23 @@ public class QuestionListService {
                     stack.push("/");
                     break;
                 case "EF": // 문장의 끝. 디버그용으로 텍스트 출력
-                    if (result.containsKey("A")) {
-                        Stack<String> existingStack = result.get("A");
-                        existingStack.push("4");
-                        existingStack.push("5");
-                    }
-                    System.out.println("[userMorphemeAnalysis] sentenceTitle : "+sentenceTitle);
-                    System.out.println("[userMorphemeAnalysis] queue : "+stack);
-                    result.put(sentenceTitle,stack);
+                    Stack<String> newStack = new Stack<>();
+                    newStack.addAll(stack); // 기존 stack의 내용을 새로운 stack에 복사
                     stack.clear();
+                    // key값이 중복된다면.. 합친다.
+                    for(String sentenceTitle : sentenceTitles){
+                        System.out.println("\u001B[32m" + "[userMorphemeAnalysis] sentenceTitle : " + sentenceTitle );
+                        if (result.containsKey(sentenceTitle)) {
+                            Stack<String> existingStack = result.get(sentenceTitle);
+                            stack = mergeStacks(existingStack,newStack);
+                            System.out.println("[userMorphemeAnalysis] stack : " + stack + "\u001B[0m");
+                            result.put(sentenceTitle,stack);
+                        }else{
+                            System.out.println("[userMorphemeAnalysis] stack : " + newStack + "\u001B[0m");
+                            result.put(sentenceTitle,newStack);
+                        }
+                    }
+                    sentenceTitles.clear();
                     break;
                 default:
             }
@@ -330,6 +283,8 @@ public class QuestionListService {
     private boolean matchRateScoring(Map<String,Stack<String>> dbAnswer, Map<String,Stack<String>> userAnswer,List<String> keywords) {
         for (String keyword : keywords) {
             Stack<String> dbAnswerStack = dbAnswer.get(keyword);
+            if(dbAnswerStack == null)
+                continue;
             Stack<String> userAnswerStack = userAnswer.get(keyword);
             String checkStr = dbAnswerStack.peek();
             for (int i = 0; i < userAnswerStack.size(); i++) {
@@ -377,15 +332,17 @@ public class QuestionListService {
     }
 
     // 스택을 한꺼번에 합치는 메서드
-    public static void mergeStacks(Stack<String> stack1, Stack<String> stack2) {
-        // stack2의 모든 요소를 stack1에 push (역순으로 추가)
+    private Stack<String> mergeStacks(Stack<String> stackBase, Stack<String> stackAdd) {
+        Stack<String> stackAddClone = new Stack<>();
         Stack<String> tempStack = new Stack<>(); // 중간에 뒤집기 위한 임시 스택
-        while (!stack2.isEmpty()) {
-            tempStack.push(stack2.pop());
+        stackAddClone.addAll(stackAdd);
+        while (!stackAddClone.isEmpty()) {
+            tempStack.push(stackAddClone.pop());
         }
         while (!tempStack.isEmpty()) {
-            stack1.push(tempStack.pop());
+            stackBase.push(tempStack.pop());
         }
+        return stackBase;
     }
 //
 //    /**
