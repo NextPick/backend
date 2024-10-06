@@ -1,5 +1,5 @@
 불변성	NNG
 불가능	NNG
-객체    NNG
-할 수 있는   VCP
-할 수 없는   VCN
+입니다	EF
+할 수 있는	VCP
+할 수 없는	VCN

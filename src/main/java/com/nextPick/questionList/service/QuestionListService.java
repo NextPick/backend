@@ -5,6 +5,8 @@ import com.nextPick.exception.ExceptionCode;
 import com.nextPick.keyword.entity.Keyword;
 import com.nextPick.questionList.entity.QuestionList;
 import com.nextPick.questionList.repository.QuestionListRepository;
+import com.nextPick.synonyms.entity.Synonyms;
+import com.nextPick.synonyms.repository.SynonymsRepository;
 import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
 import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionListService {
     private final QuestionListRepository questionListRepository;
+    private final SynonymsRepository synonymsRepository;
 //
     /**
      * 사용자 응답을 분석하고 판정하는 메서드
@@ -103,41 +106,43 @@ public class QuestionListService {
         Map<String,Stack<String>> result = new HashMap<>();
 
         for (int i = 0; i < keywordList.size(); i++) {
-            if(wordExplains.get(i) == null)
-                continue;
-            KomoranResult analyzeResultList = komoran.analyze(wordExplains.get(i));
-            List<Token> tokenList = analyzeResultList.getTokenList();
-            for (int j = 0; j < tokenList.size(); j++){
-                Token token = tokenList.get(j);
-                // 분석해야 하는 형태소라면은..?
-                switch (token.getPos()) {
-                    case "JKS": // 가
-                    case "JKO": // 를, 은, 는 '>'
-                        stack.pop();
-                        stack.push(">");
-                        break;
-                    case "JC":  // 와 '&'
-                        stack.pop();
-                        stack.push("&");
-                        break;
-                    case "JKB": // 에서, 에, 으로 '<'
-                        stack.pop();
-                        stack.push("<");
-                        break;
-                    case "VV":  // 동사
-                    case "VA":  // 형용사
-                        stack.push(token.getMorph());
-                        stack.push("/");
-                        break;
-                    case "NNG": // 일반 명사
-                    case "NNP": // 고유 명사
-                    case "SL":  // 외국어
-                        stack.push(token.getMorph());
-                        stack.push("/");
-                        break;
-                    case "EF": // 문장의 끝. 디버그용으로 텍스트 출력
-                        break;
-                    default:
+            if(wordExplains.get(i) == null) {
+//                continue;
+            }else {
+                KomoranResult analyzeResultList = komoran.analyze(wordExplains.get(i));
+                List<Token> tokenList = analyzeResultList.getTokenList();
+                for (int j = 0; j < tokenList.size(); j++) {
+                    Token token = tokenList.get(j);
+                    // 분석해야 하는 형태소라면은..?
+                    switch (token.getPos()) {
+                        case "JKS": // 가
+                        case "JKO": // 를, 은, 는 '>'
+                            stack.pop();
+                            stack.push(">");
+                            break;
+                        case "JC":  // 와 '&'
+                            stack.pop();
+                            stack.push("&");
+                            break;
+                        case "JKB": // 에서, 에, 으로 '<'
+                            stack.pop();
+                            stack.push("<");
+                            break;
+                        case "VV":  // 동사
+                        case "VA":  // 형용사
+                            stack.push(token.getMorph());
+                            stack.push("/");
+                            break;
+                        case "NNG": // 일반 명사
+                        case "NNP": // 고유 명사
+                        case "SL":  // 외국어
+                            stack.push(token.getMorph());
+                            stack.push("/");
+                            break;
+                        case "EF": // 문장의 끝. 디버그용으로 텍스트 출력
+                            break;
+                        default:
+                    }
                 }
             }
             Stack<String> newStack = new Stack<>();
@@ -201,27 +206,28 @@ public class QuestionListService {
                     stack.push(token.getMorph());
                     stack.push("/");
                     break;
-                case "EF": // 문장의 끝. 디버그용으로 텍스트 출력
-                    Stack<String> newStack = new Stack<>();
-                    newStack.addAll(stack); // 기존 stack의 내용을 새로운 stack에 복사
-                    stack.clear();
-                    // key값이 중복된다면.. 합친다.
-                    for(String sentenceTitle : sentenceTitles){
-                        System.out.println("\u001B[32m" + "[userMorphemeAnalysis] sentenceTitle : " + sentenceTitle );
-                        if (result.containsKey(sentenceTitle)) {
-                            Stack<String> existingStack = result.get(sentenceTitle);
-                            Stack<String> mergeStack = new Stack<>();
-                            mergeStack = mergeStacks(existingStack,newStack);
-                            System.out.println("[userMorphemeAnalysis] stack : " + mergeStack + "\u001B[0m");
-                            result.put(sentenceTitle,mergeStack);
-                        }else{
-                            System.out.println("[userMorphemeAnalysis] stack : " + newStack + "\u001B[0m");
-                            result.put(sentenceTitle,newStack);
-                        }
-                    }
-                    sentenceTitles.clear();
-                    break;
                 default:
+                    if(token.getPos().equals("EF") || i == tokenList.size()-1){
+                        Stack<String> newStack = new Stack<>();
+                        newStack.addAll(stack); // 기존 stack의 내용을 새로운 stack에 복사
+                        stack.clear();
+                        // key값이 중복된다면.. 합친다.
+                        for(String sentenceTitle : sentenceTitles){
+                            System.out.println("\u001B[32m" + "[userMorphemeAnalysis] sentenceTitle : " + sentenceTitle );
+                            if (result.containsKey(sentenceTitle)) {
+                                Stack<String> existingStack = result.get(sentenceTitle);
+                                Stack<String> mergeStack = new Stack<>();
+                                mergeStack = mergeStacks(existingStack,newStack);
+                                System.out.println("[userMorphemeAnalysis] stack : " + mergeStack + "\u001B[0m");
+                                result.put(sentenceTitle,mergeStack);
+                            }else{
+                                System.out.println("[userMorphemeAnalysis] stack : " + newStack + "\u001B[0m");
+                                result.put(sentenceTitle,newStack);
+                            }
+                        }
+                        sentenceTitles.clear();
+                        break;
+                    }
             }
         }
         return result;
@@ -231,6 +237,11 @@ public class QuestionListService {
         Stack<String> deepAnalysis = new Stack<>();
         Map<String,Stack<String>> result = new HashMap<>();
 
+        Map<String, String> synonymsDic = new HashMap<>();
+        List<Synonyms> synonymsList = synonymsRepository.findAll();
+        for (Synonyms synonyms : synonymsList)
+            synonymsDic.put(synonyms.getWord(),synonyms.getMean());
+
         for (Map.Entry<String, Stack<String>> entry : userResponseMorpheme.entrySet()) {
             String key = entry.getKey();
             Stack<String> originalStack = entry.getValue();
@@ -239,10 +250,10 @@ public class QuestionListService {
             Stack<String> transformedEngStack = transformEngStack(originalStack);
 
             // 2. 동의어 처리
-//            Stack<String> transformedSynonymsStack = transformSynonymsStack(originalStack);
+            Stack<String> transformedSynonymsStack = transformSynonymsStack(transformedEngStack,synonymsDic);
 
             // 3. 기본 변환 수행 ( 불필요한 Stack 제거 )
-            Stack<String> transformedStack = transformStack(transformedEngStack);
+            Stack<String> transformedStack = transformStack(transformedSynonymsStack);
 
             // 4. 1차 심화 변환 수행 ( 1차 정규화 및 인식 개선 )
             Stack<String> deepTransformedStack = firstDeepTransformStack(transformedStack);
@@ -340,15 +351,17 @@ public class QuestionListService {
 //        }
 //    }
 
-    private Stack<String> transformSynonymsStack(Stack<String> originalStack){
+    private Stack<String> transformSynonymsStack(Stack<String> originalStack,Map<String, String> synonymsDic){
         Stack<String> resultStack = new Stack<>();
         List<String> tokens = new ArrayList<>(originalStack);
 
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
-            String lowerCaseToken = token.toLowerCase();
-            resultStack.push(lowerCaseToken);
+            if(synonymsDic.containsKey(token))
+                token = synonymsDic.get(token);
+            resultStack.push(token);
         }
+        System.out.println("[transformSynonymsStack]" + resultStack);
         return resultStack;
     }
 
@@ -448,17 +461,30 @@ public class QuestionListService {
             }
 
             // 2. 현재 토큰이 "없"또는 "있" 인 경우 이전 토큰을 분해
-            if ((token.equals("없") || token.equals("있")) && !resultStack.isEmpty()) {
-                String previous = resultStack.pop();
-                String[] splitParts = splitAtLastSymbolForEmpty(previous);
-                if (splitParts != null) {
-                    resultStack.push(splitParts[0]);
-                    if(splitParts.length != 1){
-                        resultStack.push(splitParts[1]); // 분해된 부분
+            if(token.contains("X") || token.contains("O")){
+                if ((token.equals("X") || token.equals("O")) && !resultStack.isEmpty()) {
+                    String previous = resultStack.pop();
+                    String[] splitParts = splitAtLastSymbolForEmpty(previous);
+                    if (splitParts != null) {
+                        resultStack.push(splitParts[0]);
+                        if(splitParts.length != 1){
+                            resultStack.push(splitParts[1]); // 분해된 앞 부분
+                            resultStack.push(splitParts[2]); // 분해된 뒷 부분
+                        }
                     }
+                    resultStack.push(token); // "없" 또는 "있" 추가
+                    continue;
+                }else if(token.contains(">")) {
+                    String[] splitParts = token.split(">");
+                    resultStack.push(splitParts[0]);
+                    resultStack.push(splitParts[1]);
+                    continue;
+                }else if(token.contains("<")) {
+                    String[] splitParts = token.split("<");
+                    resultStack.push(splitParts[0]);
+                    resultStack.push(splitParts[1]);
+                    continue;
                 }
-                resultStack.push(token); // "없" 또는 "있" 추가
-                continue;
             }
 
             // 기본적으로 토큰을 추가
@@ -639,19 +665,21 @@ public class QuestionListService {
             // 마지막 기호가 '>'
             String firstPart = str; // 전체 문자열 유지
             String secondPart = str.substring(lastGt + 1, str.length());
+            String thirdPart = str.substring(0,lastGt);
             if (secondPart.isEmpty()) {
                 // '>' 다음에 아무것도 없으면 분리하지 않음
                 return null;
             }
-            return new String[]{firstPart, secondPart};
+            return new String[]{firstPart, secondPart, thirdPart};
         } else {
             // 마지막 기호가 '<'
             String firstPart = str;
             String secondPart = str.substring(lastLt + 1, str.length());
+            String thirdPart = str.substring(0,lastLt);
             if (secondPart.isEmpty()) {
                 return null;
             }
-            return new String[]{firstPart, secondPart};
+            return new String[]{firstPart, secondPart, thirdPart};
         }
     }
 
@@ -661,7 +689,12 @@ public class QuestionListService {
             if(dbAnswerStack == null)
                 continue;
             Stack<String> userAnswerStack = userAnswer.get(keyword);
-            String checkStr = dbAnswerStack.peek();
+            String checkStr = "";
+            try {
+                checkStr = dbAnswerStack.peek();
+            }catch (EmptyStackException e) {
+                System.out.println("[matchRateScoring] explain값이 없는 DB-Keyword 입니다.");
+            }
             for (int i = 0; i < userAnswerStack.size(); i++) {
                 if(checkStr.equals(userAnswerStack.get(i))){
                     dbAnswerStack.pop();
