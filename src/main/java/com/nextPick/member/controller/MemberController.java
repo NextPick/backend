@@ -5,7 +5,7 @@ import com.nextPick.member.dto.MemberDto;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.mapper.MemberMapper;
 import com.nextPick.member.service.MemberService;
-import com.nextPick.questionList.controller.utils.UriCreator;
+import com.nextPick.utils.UriCreator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

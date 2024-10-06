@@ -1,5 +1,6 @@
 package com.nextPick.questionCategory.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.nextPick.questionList.entity.QuestionList;
 import lombok.Getter;
@@ -21,7 +22,7 @@ public class QuestionCategory {
     @Column(name = "categoryName", nullable = false)
     private String categoryName;
 
-    @OneToMany
-    @JsonManagedReference
+    @OneToMany(mappedBy = "questionCategory")
+    @JsonBackReference
     private List<QuestionList> questionLists;
 }
