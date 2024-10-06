@@ -27,6 +27,6 @@ public class Keyword {
 
     @ManyToOne
     @JoinColumn(name = "question_list_id")
-    @JsonBackReference
+    @JsonManagedReference
     private QuestionList questionList;
 }

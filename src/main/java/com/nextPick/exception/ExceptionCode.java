@@ -6,6 +6,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExceptionCode {
 
+    //questionList
+    QUESTION_NOT_FOUND(404, "문제를 찾을 수 없습니다."),
+
     //member
     MEMBER_NOT_FOUND(404,"Member Not Found"),
     MEMBER_EXISTS(409,"Member exists"),

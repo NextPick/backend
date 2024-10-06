@@ -3,7 +3,7 @@ package com.nextPick.member.service;
 import com.nextPick.auth.utils.CustomAuthorityUtils;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
-import com.nextPick.questionList.controller.utils.ExtractMemberAndVerify;
+import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;

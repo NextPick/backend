@@ -37,11 +37,11 @@ public class QuestionList {
     private int correctRate = 0;
 
     @ManyToOne
-    @JsonBackReference
+    @JsonManagedReference
     @JoinColumn(name = "question_category_id") // 외래 키 컬럼 이름 지정
     private QuestionCategory questionCategory;
 
-    @OneToMany
-    @JsonManagedReference
+    @OneToMany(mappedBy = "questionList", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
     private List<Keyword> keywords;
 }
