@@ -9,10 +9,13 @@ import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
 import kr.co.shineware.nlp.komoran.core.Komoran;
 import kr.co.shineware.nlp.komoran.model.KomoranResult;
 import kr.co.shineware.nlp.komoran.model.Token;
+import kr.co.shineware.nlp.komoran.modeler.model.Observation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,8 +46,10 @@ public class QuestionListService {
         komoran.setUserDic("src/main/resources/userCustomDic.txt");
 
         //키워드가 빠져 있는지 확인
-        if(!areAllKeywordsPresent(userResponse,keywordSet))
+        if(!areAllKeywordsPresent(userResponse,keywordSet)){
+            System.out.println("[areAllKeywordsPresent] 누락된 키워드가 존재합니다.");
             return false;
+        }
 
         //사용자 응답 분석 ( 형태소 분석 + 맥락 분석 + 단어 간 관계도)
         Map<String, Stack<String>> userResponseMorpheme = userMorphemeAnalysis(userResponse,keywordSet,komoran);
@@ -59,106 +64,36 @@ public class QuestionListService {
         Map<String, Stack<String>> databaseResponseDeep = userResponseDeepAnalysis(databaseCorrectMorpheme);
 
         //사용자 응답 인식/일치율 증가 작업 ( 단어 간 관계도 역전 )
+        Map<String, Stack<String>> userResponseRelateReverse = userResponseRelateReverseAnalysis(userResponseDeep);
+
+        //분석 결과 확인 목적 디버그 메서드
+        debugFinalMorphemeAnalysis(databaseResponseDeep,userResponseRelateReverse);
 
         //사용자 응답과 DB 정답 비교 후 일치율 파악
-        boolean isCorrect = matchRateScoring(databaseResponseDeep,userResponseDeep,keywordSet);
+        boolean isCorrect = matchRateScoring(databaseResponseDeep,userResponseRelateReverse,keywordSet);
 
-
-//        Map<String, List<String>> extractedAttributes = extractKeywordsAttributes(userResponse, question.getKeywords());
-//        boolean isCorrect = compareAttributes(extractedAttributes, question.getKeywords());
         return isCorrect;
     }
 //
-    /**
-     * Komoran을 사용하여 키워드와 그 속성을 추출하는 메서드
-     *
-     * @param userResponse 분석할 문장
-     * @param keywords 추출할 키워드 리스트
-     * @return 키워드와 그 속성의 매핑
-     */
-    private Map<String, List<String>> extractKeywordsAttributes(String userResponse, List<Keyword> keywords) {
-        Map<String, List<String>> keywordAttributes = new HashMap<>();
-        List<String> keywordSet = keywords.stream()
-                .map(Keyword::getWord)
-                .collect(Collectors.toList());
+    private void debugFinalMorphemeAnalysis(Map<String, Stack<String>> databaseResponseDeep,
+                                            Map<String, Stack<String>> userResponseRelateReverse) {
 
-        Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
-        komoran.setUserDic("src/main/resources/userCustomDic.txt");
-        areAllKeywordsPresent(userResponse,keywordSet);
-        // 형태소 분석
-        KomoranResult analyzeResultList = komoran.analyze(userResponse);
-        List<Token> tokens = analyzeResultList.getTokenList();
-
-        // 키워드별 속성 추출
-        for (int i = 0; i < tokens.size(); i++) {
-            Token token = tokens.get(i);
-            String morph = token.getMorph();
-            String pos = token.getPos();
-
-            // 키워드인지 확인
-            if (keywordSet.contains(morph) && pos.equals("NNG")) {
-                List<String> attributes = new ArrayList<>();
-                StringBuilder attributeBuilder = new StringBuilder();
-
-                // 키워드 다음에 오는 형용사(VV), 동사(VV), 형용사 관련 POS 추출
-                for (int j = i + 1; j < tokens.size(); j++) {
-                    Token nextToken = tokens.get(j);
-                    String nextMorph = nextToken.getMorph();
-                    String nextPos = nextToken.getPos();
-
-
-                    if (nextPos.startsWith("VV") || nextPos.startsWith("VA") || nextPos.startsWith("VCP") || nextPos.startsWith("VX")) {
-                        // 동사 또는 형용사인 경우 속성에 추가
-                        attributeBuilder.append(nextMorph).append(" ");
-                    } else if (nextPos.startsWith("J")) {
-                        // 조사는 건너뛰고 다음 형태소로 계속 탐색
-                        continue;
-                    } else if (nextPos.equals("EC") || nextPos.equals("EF") || nextPos.equals("SF")) {
-                        // 연결 어미, 종결 어미, 문장 부호가 나오면 속성 추출 종료
-                        break;
-                    } else {
-                        // 다른 품사가 나오면 속성 추출 종료
-                        break;
-                    }
-                }
-
-                String attribute = attributeBuilder.toString().trim();
-                if (!attribute.isEmpty()) {
-                    attributes.add(attribute);
-                    keywordAttributes.put(morph, attributes);
-                }
-            }
+        System.out.println("--------------------------------------------------------------------");
+        for (Map.Entry<String, Stack<String>> entry : databaseResponseDeep.entrySet()) {
+            String key = entry.getKey();
+            List<String> values = entry.getValue();
+            System.out.println("\u001b[36;1m" + "[final-DB_Response] key : " + key );
+            System.out.println("[final-DB_Response] values : " + values + "\u001B[0m");
+            System.out.println("--------------------------------------------------------------------");
         }
-        return keywordAttributes;
-    }
 
-    /**
-     * 추출된 사용자 속성과 정답 속성을 비교하여 일치 여부를 판단하는 메서드
-     *
-     * @param userAttributes    사용자 응답에서 추출된 키워드 속성
-     * @param keywords          정답 맥락 리스트
-     * @return 모든 정답 맥락이 사용자 속성에 포함되면 true, 그렇지 않으면 false
-     */
-    private boolean compareAttributes(Map<String, List<String>> userAttributes, List<Keyword> keywords) {
-        Set<String> correctContexts = keywords.stream()
-                .map(Keyword::getWordExplain)
-                .collect(Collectors.toSet());
-        for (String context : correctContexts) {
-            boolean matched = false;
-            for (List<String> attrs : userAttributes.values()) {
-                for (String attr : attrs) {
-                    if (attr.contains(context)) {
-                        matched = true;
-                        break;
-                    }
-                }
-                if (matched) break;
-            }
-            if (!matched) {
-                return false;
-            }
+        for (Map.Entry<String, Stack<String>> entry : userResponseRelateReverse.entrySet()) {
+            String key = entry.getKey();
+            List<String> values = entry.getValue();
+            System.out.println("\u001b[34;1m" + "[final-User_Response] key : " + key );
+            System.out.println("[final-User_Response] values : " + values + "\u001B[0m");
+            System.out.println("--------------------------------------------------------------------");
         }
-        return true;
     }
 
     private Map<String,Stack<String>> databaseMorphemeAnalysis(List<String> wordExplains,
@@ -236,8 +171,9 @@ public class QuestionListService {
         for (int i = 0; i < tokenList.size(); i++) {
             Token token = tokenList.get(i);
             if(keywordList.contains(token.getMorph())) {
-                if(!sentenceTitles.contains(token.getMorph()))
+                if(!sentenceTitles.contains(token.getMorph())) {
                     sentenceTitles.add(token.getMorph());
+                }
             }
             // 분석해야 하는 형태소라면은..?
             switch (token.getPos()) {
@@ -274,9 +210,10 @@ public class QuestionListService {
                         System.out.println("\u001B[32m" + "[userMorphemeAnalysis] sentenceTitle : " + sentenceTitle );
                         if (result.containsKey(sentenceTitle)) {
                             Stack<String> existingStack = result.get(sentenceTitle);
-                            stack = mergeStacks(existingStack,newStack);
-                            System.out.println("[userMorphemeAnalysis] stack : " + stack + "\u001B[0m");
-                            result.put(sentenceTitle,stack);
+                            Stack<String> mergeStack = new Stack<>();
+                            mergeStack = mergeStacks(existingStack,newStack);
+                            System.out.println("[userMorphemeAnalysis] stack : " + mergeStack + "\u001B[0m");
+                            result.put(sentenceTitle,mergeStack);
                         }else{
                             System.out.println("[userMorphemeAnalysis] stack : " + newStack + "\u001B[0m");
                             result.put(sentenceTitle,newStack);
@@ -298,19 +235,121 @@ public class QuestionListService {
             String key = entry.getKey();
             Stack<String> originalStack = entry.getValue();
 
-            // 1. 기본 변환 수행 ( 불필요한 Stack 제거 )
-            Stack<String> transformedStack = transformStack(originalStack);
+            // 1. 영문 대소문자 구분 제거 처리
+            Stack<String> transformedEngStack = transformEngStack(originalStack);
 
-            // 2. 1차 심화 변환 수행 ( 1차 정규화 및 인식 개선 )
+            // 2. 동의어 처리
+//            Stack<String> transformedSynonymsStack = transformSynonymsStack(originalStack);
+
+            // 3. 기본 변환 수행 ( 불필요한 Stack 제거 )
+            Stack<String> transformedStack = transformStack(transformedEngStack);
+
+            // 4. 1차 심화 변환 수행 ( 1차 정규화 및 인식 개선 )
             Stack<String> deepTransformedStack = firstDeepTransformStack(transformedStack);
 
-            // 3. 2차 심화 변환 수행 ( 2차 정규화 )
+            // 5. 2차 심화 변환 수행 ( 2차 정규화 )
             Stack<String> secondDeepTransformedStack = secondDeepTransformStack(deepTransformedStack);
 
             // 결과 맵에 추가
-            result.put(key, deepTransformedStack);
+            result.put(key, secondDeepTransformedStack);
         }
         return result;
+    }
+
+    private Map<String,Stack<String>> userResponseRelateReverseAnalysis(Map<String,Stack<String>> userResponseDeep) {
+        Map<String,Stack<String>> result = new HashMap<>();
+
+        for (Map.Entry<String, Stack<String>> entry : userResponseDeep.entrySet()) {
+            String key = entry.getKey();
+            Stack<String> originalStack = entry.getValue();
+
+            // 1. 단어간 연관 관계 역전 변환 수행 ( 불필요한 Stack 제거 )
+            Stack<String> transformedStack = transformStackRelateReverse(originalStack);
+
+            // 결과 맵에 추가
+            result.put(key, transformedStack);
+        }
+        return result;
+    }
+
+    private Stack<String> transformStackRelateReverse(Stack<String> originalStack) {
+        Stack<String> resultStack = new Stack<>();
+        List<String> tokens = new ArrayList<>(originalStack);
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+            resultStack.push(token);
+
+            int leftArrowCount = countOccurrences(token, "<");
+            int rightArrowCount = countOccurrences(token, ">");
+            // 1. 문자열에 '<' 또는 '>'가 두 개 이상 포함된 경우 분해
+            if (leftArrowCount == 1) {
+                String[] PartsArray = token.split("<");
+                resultStack.push(PartsArray[1] + ">" + PartsArray[0]);
+            }else if(rightArrowCount == 1){
+                String[] PartsArray = token.split(">");
+                resultStack.push(PartsArray[1] + "<" + PartsArray[0]);
+            }
+        }
+        System.out.println("[transformStackRelateReverse]" + resultStack);
+        return resultStack;
+
+    }
+
+    private Stack<String> transformEngStack(Stack<String> originalStack) {
+        Stack<String> resultStack = new Stack<>();
+        List<String> tokens = new ArrayList<>(originalStack);
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+            String lowerCaseToken = token.toLowerCase();
+            resultStack.push(lowerCaseToken);
+        }
+        return resultStack;
+    }
+
+//    public void setUserDic(String userDic) {
+//        try {
+//            this.userDic = new Observation();
+//            BufferedReader br = new BufferedReader(new FileReader(userDic));
+//
+//            String line;
+//            while((line = br.readLine()) != null) {
+//                line = line.trim();
+//                if (line.length() != 0 && line.charAt(0) != '#') {
+//                    int lastIdx = line.lastIndexOf("\t");
+//                    String morph;
+//                    String pos;
+//                    if (lastIdx == -1) {
+//                        morph = line.trim();
+//                        pos = "NNP";
+//                    } else {
+//                        morph = line.substring(0, lastIdx);
+//                        pos = line.substring(lastIdx + 1);
+//                    }
+//
+//                    this.userDic.put(morph, pos, this.resources.getTable().getId(pos), 0.0);
+//                }
+//            }
+//
+//            br.close();
+//            this.userDic.getTrieDictionary().buildFailLink();
+//        } catch (Exception var7) {
+//            Exception e = var7;
+//            e.printStackTrace();
+//        }
+//    }
+
+    private Stack<String> transformSynonymsStack(Stack<String> originalStack){
+        Stack<String> resultStack = new Stack<>();
+        List<String> tokens = new ArrayList<>(originalStack);
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+            String lowerCaseToken = token.toLowerCase();
+            resultStack.push(lowerCaseToken);
+        }
+        return resultStack;
     }
 
     /**
@@ -437,9 +476,9 @@ public class QuestionListService {
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
 
-            int andArrowCount = countOccurrences(token, "&");
+            int andCount = countOccurrences(token, "&");
             // 1. 문자열에 '<' 또는 '>'가 두 개 이상 포함된 경우 분해
-            if (andArrowCount > 0) {
+            if (andCount > 0) {
                 List<String> splitParts = splitAtAndSymbol(token);
                 for(String str : splitParts)
                     resultStack.push(str);
@@ -633,10 +672,11 @@ public class QuestionListService {
                         break;
                     }
                     i = 0;
-                } else if (i == userAnswerStack.size() - 1) {
-                    System.out.println("[matchRateScoring] 미흡한 설명이 존재합니다.");
-                    return false;
                 }
+            }
+            if(!dbAnswerStack.isEmpty()){
+                System.out.println("[matchRateScoring] 미흡한 설명이 존재합니다.");
+                return false;
             }
         }
         return true;
