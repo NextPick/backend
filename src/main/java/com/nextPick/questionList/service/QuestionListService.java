@@ -39,21 +39,26 @@ public class QuestionListService {
                 .map(Keyword::getWordExplain)
                 .collect(Collectors.toList());
 
+        Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
+        komoran.setUserDic("src/main/resources/userCustomDic.txt");
+
         //키워드가 빠져 있는지 확인
         if(!areAllKeywordsPresent(userResponse,keywordSet))
             return false;
 
         //사용자 응답 분석 ( 형태소 분석 + 맥락 분석 + 단어 간 관계도)
-        Map<String, Stack<String>> userResponseMorpheme = userMorphemeAnalysis(userResponse,keywordSet);
+        Map<String, Stack<String>> userResponseMorpheme = userMorphemeAnalysis(userResponse,keywordSet,komoran);
 
         //DB 정답 분석 ( 형태소 분석 + 맥락 분석 + 단어 간 관계도)
-        Map<String, Stack<String>> databaseCorrectMorpheme = databaseMorphemeAnalysis(correctContexts,keywordSet);
+        Map<String, Stack<String>> databaseCorrectMorpheme = databaseMorphemeAnalysis(correctContexts,keywordSet,komoran);
 
-        //사용자 응답 심화 분석 ( 단어 간 관계도 역전 및 정규화 )
+        //사용자 응답 심화 분석 ( 단어 간 관계도 정규화 및 해석 불필요 단어 제거 )
         Map<String, Stack<String>> userResponseDeep = userResponseDeepAnalysis(userResponseMorpheme);
 
-        //DB 정답 심화 분석 ( 단어 간 관계도 역전 및 정규화 )
+        //DB 정답 심화 분석 ( 단어 간 관계도 정규화 및 해석 불필요 단어 제거 )
         Map<String, Stack<String>> databaseResponseDeep = userResponseDeepAnalysis(databaseCorrectMorpheme);
+
+        //사용자 응답 인식/일치율 증가 작업 ( 단어 간 관계도 역전 )
 
         //사용자 응답과 DB 정답 비교 후 일치율 파악
         boolean isCorrect = matchRateScoring(databaseResponseDeep,userResponseDeep,keywordSet);
@@ -156,12 +161,12 @@ public class QuestionListService {
         return true;
     }
 
-    private Map<String,Stack<String>> databaseMorphemeAnalysis(List<String> wordExplains, List<String> keywordList) {
+    private Map<String,Stack<String>> databaseMorphemeAnalysis(List<String> wordExplains,
+                                                               List<String> keywordList,
+                                                               Komoran komoran) {
         Stack<String> stack = new Stack<>();
         Map<String,Stack<String>> result = new HashMap<>();
 
-        Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
-        komoran.setUserDic("src/main/resources/userCustomDic.txt");
         for (int i = 0; i < keywordList.size(); i++) {
             if(wordExplains.get(i) == null)
                 continue;
@@ -218,12 +223,11 @@ public class QuestionListService {
         return result;
     }
 
-    private Map<String,Stack<String>> userMorphemeAnalysis(String userAnswer, List<String> keywordList) {
+    private Map<String,Stack<String>> userMorphemeAnalysis(String userAnswer,
+                                                           List<String> keywordList,
+                                                           Komoran komoran) {
         Stack<String> stack = new Stack<>();
         Map<String,Stack<String>> result = new HashMap<>();
-
-        Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
-        komoran.setUserDic("src/main/resources/userCustomDic.txt");
 
         KomoranResult analyzeResultList = komoran.analyze(userAnswer);
         List<Token> tokenList = analyzeResultList.getTokenList();
@@ -294,11 +298,14 @@ public class QuestionListService {
             String key = entry.getKey();
             Stack<String> originalStack = entry.getValue();
 
-            // 1. 기본 변환 수행
+            // 1. 기본 변환 수행 ( 불필요한 Stack 제거 )
             Stack<String> transformedStack = transformStack(originalStack);
 
-            // 2. 심화 변환 수행
-            Stack<String> deepTransformedStack = deepTransformStack(transformedStack);
+            // 2. 1차 심화 변환 수행 ( 1차 정규화 및 인식 개선 )
+            Stack<String> deepTransformedStack = firstDeepTransformStack(transformedStack);
+
+            // 3. 2차 심화 변환 수행 ( 2차 정규화 )
+            Stack<String> secondDeepTransformedStack = secondDeepTransformStack(deepTransformedStack);
 
             // 결과 맵에 추가
             result.put(key, deepTransformedStack);
@@ -380,16 +387,20 @@ public class QuestionListService {
      * @param transformedStack 변환된 스택
      * @return 심화 변환된 스택
      */
-    private Stack<String> deepTransformStack(Stack<String> transformedStack) {
+    private Stack<String> firstDeepTransformStack(Stack<String> transformedStack) {
         Stack<String> resultStack = new Stack<>();
         List<String> tokens = new ArrayList<>(transformedStack);
 
         for (int i = 0; i < tokens.size(); i++) {
             String token = tokens.get(i);
 
+
+            int leftArrowCount = countOccurrences(token, "<");
+            int rightArrowCount = countOccurrences(token, ">");
+            int commaCount = countOccurrences(token, ",");
             // 1. 문자열에 '<' 또는 '>'가 두 개 이상 포함된 경우 분해
-            if ((countOccurrences(token, "<") + countOccurrences(token, ">")) >= 2) {
-                String[] splitParts = splitAtLastSymbol(token);
+            if ((leftArrowCount + rightArrowCount) >= 2 && commaCount == 0) {
+                String[] splitParts = splitAtLastSymbol(token,leftArrowCount,rightArrowCount);
                 if (splitParts != null) {
                     resultStack.push(splitParts[0]);
                     resultStack.push(splitParts[1]);
@@ -402,8 +413,10 @@ public class QuestionListService {
                 String previous = resultStack.pop();
                 String[] splitParts = splitAtLastSymbolForEmpty(previous);
                 if (splitParts != null) {
-                    resultStack.push(splitParts[0]); // 전체 이전 토큰
-                    resultStack.push(splitParts[1]); // 분해된 부분
+                    resultStack.push(splitParts[0]);
+                    if(splitParts.length != 1){
+                        resultStack.push(splitParts[1]); // 분해된 부분
+                    }
                 }
                 resultStack.push(token); // "없" 또는 "있" 추가
                 continue;
@@ -413,7 +426,28 @@ public class QuestionListService {
             resultStack.push(token);
         }
 
-        System.out.println("[deepTransformStack]" + resultStack);
+        System.out.println("[firstDeepTransformStack]" + resultStack);
+        return resultStack;
+    }
+
+    private Stack<String> secondDeepTransformStack(Stack<String> transformedStack){
+        Stack<String> resultStack = new Stack<>();
+        List<String> tokens = new ArrayList<>(transformedStack);
+
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i);
+
+            int andArrowCount = countOccurrences(token, "&");
+            // 1. 문자열에 '<' 또는 '>'가 두 개 이상 포함된 경우 분해
+            if (andArrowCount > 0) {
+                List<String> splitParts = splitAtAndSymbol(token);
+                for(String str : splitParts)
+                    resultStack.push(str);
+            }else {
+                resultStack.push(token);
+            }
+        }
+        System.out.println("[secondDeepTransformStack]" + resultStack);
         return resultStack;
     }
 
@@ -442,24 +476,37 @@ public class QuestionListService {
      * @param str 문자열
      * @return 분리된 두 부분의 배열
      */
-    private String[] splitAtLastSymbol(String str) {
-        int lastLt = str.lastIndexOf("<");
-        int lastGt = str.lastIndexOf(">");
+    private String[] splitAtLastSymbol(String str,int leftArrowCount, int rightArrowCount) {
+        String[] result = null;
+        if(leftArrowCount == 1 && rightArrowCount == 1)
+            result = splitAtLastSymbolOneLeftArrowAndOneRightArrow(str);
+        else if(rightArrowCount == 2)
+            result = splitAtLastSymbolOnlyTwoSameArrow(str,'>');
+        else if(leftArrowCount == 2)
+            result = splitAtLastSymbolOnlyTwoSameArrow(str,'<');
+        else
+            System.out.println("[splitAtLastSymbol] 복합도가 너무 높아 분석 할 수 없습니다.");
+        return result;
+    }
 
-        if (lastLt == -1 && lastGt == -1) {
+    private String[] splitAtLastSymbolOneLeftArrowAndOneRightArrow(String str) {
+        int lastLt = str.lastIndexOf("<");
+        int lastRt = str.lastIndexOf(">");
+
+        if (lastLt == -1 && lastRt == -1) {
             return null;
         }
 
-        if (lastGt > lastLt) {
+        if (lastRt > lastLt) {
             // 마지막 기호가 '>'
-            int lastLtBeforeGt = str.lastIndexOf("<", lastGt);
+            int lastLtBeforeGt = str.lastIndexOf("<", lastRt);
             if (lastLtBeforeGt == -1) {
                 // '<'가 없으면 '>'에서만 분리
-                String firstPart = str.substring(0, lastGt);
-                String secondPart = str.substring(lastGt, str.length());
+                String firstPart = str.substring(0, lastRt);
+                String secondPart = str.substring(lastRt, str.length());
                 return new String[]{firstPart, secondPart};
             } else {
-                String firstPart = str.substring(0, lastGt);
+                String firstPart = str.substring(0, lastRt);
                 String secondPart = str.substring(lastLtBeforeGt + 1, str.length());
                 return new String[]{firstPart, secondPart};
             }
@@ -478,8 +525,63 @@ public class QuestionListService {
         }
     }
 
+    private String[] splitAtLastSymbolOnlyTwoSameArrow(String str, char arrow) {
+        List<Integer> ltIndices = new ArrayList<>();
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) == arrow) {
+                ltIndices.add(i);
+            }
+        }
+        // '<' 기호가 최소 두 개 있어야 분리 가능
+        if (ltIndices.size() < 2) {
+            throw new IllegalArgumentException("입력 문자열에 " + arrow + " 기호가 두 개 이상 필요합니다.");
+        }
+
+        int firstLtIndex = ltIndices.get(0);
+        int secondLtIndex = ltIndices.get(1);
+        int wordStart = firstLtIndex + 1;
+
+        // '나는' 단어를 포함한 첫 번째 부분
+        String firstPart = str.substring(0, secondLtIndex);
+        // '나는' 단어를 포함한 두 번째 부분
+        String secondPart = str.substring(wordStart, str.length());
+
+        return new String[]{firstPart, secondPart};
+    }
+
+    private List<String> splitAtAndSymbol(String str) {
+        List<String> result = new ArrayList<>();
+        int leftArrowCount = 0;
+        int rightArrowCount = 0;
+        leftArrowCount = countOccurrences(str, "<");
+        rightArrowCount = countOccurrences(str, ">");
+        if(leftArrowCount + rightArrowCount == 0){
+            String[] partsArray = str.split("&");
+            result = Arrays.asList(partsArray);
+        }else if(leftArrowCount == 1 && rightArrowCount == 0){
+            String[] basedOnArrowsPartsArray = str.split("<");
+            String[] basedOnAndsLeftPartsArray = basedOnArrowsPartsArray[0].split("&");
+            String[] basedOnAndsRightPartsArray = basedOnArrowsPartsArray[1].split("&");
+            for (String leftString : basedOnAndsLeftPartsArray) {
+                for (String rightString : basedOnAndsRightPartsArray) {
+                    result.add(leftString+"<"+rightString);
+                }
+            }
+        } else if (leftArrowCount == 0 && rightArrowCount == 1) {
+            String[] basedOnArrowsPartsArray = str.split(">");
+            String[] basedOnAndsLeftPartsArray = basedOnArrowsPartsArray[0].split("&");
+            String[] basedOnAndsRightPartsArray = basedOnArrowsPartsArray[1].split("&");
+            for (String leftString : basedOnAndsLeftPartsArray) {
+                for (String rightString : basedOnAndsRightPartsArray) {
+                    result.add(leftString+">"+rightString);
+                }
+            }
+        }
+        return result;
+    }
+
     /**
-     * "없"인 경우 이전 문자열을 분해합니다.
+     * "없"또는 "있" 인 경우 이전 문자열을 분해합니다.
      * 예: "상태>변경" → ["상태>변경", "변경"]
      *
      * @param str 이전 문자열
@@ -490,8 +592,8 @@ public class QuestionListService {
         int lastGt = str.lastIndexOf(">");
         int lastLt = str.lastIndexOf("<");
 
-        if (lastGt == -1 && lastLt == -1) {
-            return null;
+        if (lastLt == -1 && lastGt == -1) {
+            return new String[]{str};
         }
 
         if (lastGt > lastLt) {
@@ -540,15 +642,6 @@ public class QuestionListService {
         return true;
     }
 
-
-//
-//    private boolean checkCorrect(String userAnswer,List<String> keywordDescriptions,List<String> keywords,Komoran komoran){
-//        List<String> userAnswerSplitString = morphemeAnalysis(userAnswer,komoran);
-//        boolean keywordsCheckPass = areAllKeywordsPresent(userAnswer,keywords);
-////        boolean keywordDescriptionsCheckPass = areAllElementsPresent(userAnswerSplitString,);
-//        return true;
-//    }
-//
     /**
      * 문자열에 모든 키워드가 포함되어 있는지 확인하는 메서드
      *
@@ -580,27 +673,4 @@ public class QuestionListService {
         }
         return stackBase;
     }
-//
-//    /**
-//     * List B의 모든 요소가 List A에 포함되어 있는지 확인하는 메서드
-//     *
-//     * @param listA 확인 대상 리스트 A
-//     * @param listB 확인할 리스트 B
-//     * @return 모든 요소가 포함되어 있으면 true, 그렇지 않으면 false
-//     */
-//    public boolean areAllElementsPresent(List<String> listA, List<String> listB) {
-//        // List A를 HashSet으로 변환하여 빠른 검색 가능하게 함
-//        Set<String> setA = new HashSet<>(listA);
-//
-//        // List B의 각 요소가 Set A에 포함되어 있는지 확인
-//        for (String str : listB) {
-//            if (!setA.contains(str)) {
-//                // 하나라도 포함되지 않으면 즉시 false 반환
-//                return false;
-//            }
-//        }
-//
-//        // 모든 요소가 포함되어 있음을 확인
-//        return true;
-//    }
 }
