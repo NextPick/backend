@@ -19,16 +19,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
-        env:
-          AWS_RDS_URL: ${{ secrets.AWS_RDS_URL }}
-          RDS_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
-          RDS_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
         run: ./gradlew build
       - name: Docker build
-        env:
-          AWS_RDS_URL: ${{ secrets.AWS_RDS_URL }}
-          RDS_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
-          RDS_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
         run: |
           docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker build -t next-pick .
@@ -61,5 +53,9 @@ jobs:
               'sudo docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}',
               'sudo docker tag chaeyeon1234/next-pick:${GITHUB_SHA::7} next-pick',
               'sudo docker run -d --name server -p 8080:8080 next-pick'
+                -e AWS_RDS_URL=${{ secrets.DATASOURCE_URL }} \\  
+                -e DATASOURCE_USERNAME=${{ secrets.DATASOURCE_USERNAME }} \\
+                -e DATASOURCE_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }} \\
+                next-pick'
             ]" \
             --output text
