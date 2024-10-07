@@ -2,7 +2,7 @@ package com.nextPick.questionList.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.nextPick.keyword.entity.Keyword;
+//import com.nextPick.keyword.entity.Keyword;
 import com.nextPick.questionCategory.entity.QuestionCategory;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,7 +41,7 @@ public class QuestionList {
     @JoinColumn(name = "question_category_id") // 외래 키 컬럼 이름 지정
     private QuestionCategory questionCategory;
 
-    @OneToMany(mappedBy = "questionList", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonBackReference
-    private List<Keyword> keywords;
+//    @OneToMany(mappedBy = "questionList", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JsonBackReference
+//    private List<Keyword> keywords;
 }
