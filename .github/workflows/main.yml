@@ -33,8 +33,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
-      - name: Start Session Manager session
-        run: aws ssm start-session --target i-060f949b84e77e10a
+
+      # Start Session이 실패할 가능성이 높기 때문에 생략 가능
+      # - name: Start Session Manager session
+      #   run: aws ssm start-session --target i-060f949b84e77e10a
+
       - name: Deploy to Server
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
@@ -45,7 +48,7 @@ jobs:
             --instance-ids i-060f949b84e77e10a \
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
-              'if sudo docker ps -a --format \\'{{.Names}}\\' | grep -q \\'^server$\\'; then',
+              'if sudo docker ps -a --format \"{{.Names}}\" | grep -q \"^server$\"; then',
               '  sudo docker stop server',
               '  sudo docker rm server',
               'fi',
