@@ -22,7 +22,6 @@ public class Board extends Auditable {
     @Column(nullable = false , length = 100)
     private String title;
 
-    @Column(nullable = false , columnDefinition = "TEXT")
     private String content;
 
 
