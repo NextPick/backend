@@ -4,10 +4,10 @@ spring:
   #      host: 127.0.0.1
   #      port: 6379
   datasource:
-    url: ${{ secrets.DATASOURCE_URL }}
-    username: ${{ secrets.DATASOURCE_USER_NAME }}
+    url: ${{ secrets.RDS_URL }}
+    username: ${{ secrets.DATASOURCE_USERNAME }}
     password: ${{ secrets.DATASOURCE_PASSWORD }}
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     defer-datasource-initialization: true
     hibernate:
