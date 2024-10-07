@@ -53,9 +53,8 @@ jobs:
               'sudo docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}',
               'sudo docker tag chaeyeon1234/next-pick:${GITHUB_SHA::7} next-pick',
               'sudo docker run -d --name server -p 8080:8080 next-pick'
-                -e AWS_RDS_URL=${{ secrets.DATASOURCE_URL }} \\  
-                -e DATASOURCE_USERNAME=${{ secrets.DATASOURCE_USERNAME }} \\
-                -e DATASOURCE_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }} \\
-                next-pick'
+                -e AWS_RDS_URL=${{ secrets.DATASOURCE_URL }} \
+                -e DATASOURCE_USERNAME=${{ secrets.DATASOURCE_USERNAME }} \
+                -e DATASOURCE_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }} \
             ]" \
             --output text
