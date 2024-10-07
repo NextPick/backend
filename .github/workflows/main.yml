@@ -1,46 +1,57 @@
-name: Deploy to AWS
+name: Java CI with Gradle
 
 on:
   push:
-    branches:
-      - main, dev
+    branches: [ main, dev ]
 
 jobs:
-  deploy:
+  build:
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Java
-        uses: actions/setup-java@v1
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
         with:
           java-version: '11'
-
+          distribution: 'zulu'
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+      - name: Docker build
+        run: |
+          docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker build -t next-pick .
+          docker tag next-pick chaeyeon1234/next-pick:${GITHUB_SHA::7}
+          docker push chaeyeon1234/next-pick:${GITHUB_SHA::7}
+      #위 내용은 지속적 통합을 위한 스크립트입니다.
+      #지속적 통합을 위한 스크립트 아래에 작성합니다.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
-
-      - name: Deploy to EC2
+      - name: Start Session Manager session
+        run: aws ssm start-session --target i-060f949b84e77e10a
+      - name: Deploy to Server
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
         run: |
           aws ssm send-command \
             --instance-ids i-060f949b84e77e10a \
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
-              'docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}',
-              'docker stop next-pick-container || true',
-              'docker rm next-pick-container || true',
-              'docker run -d --name next-pick-container -p 8080:8080 chaeyeon1234/next-pick:${GITHUB_SHA::7}'
+              'if sudo docker ps -a --format \\'{{.Names}}\\' | grep -q \\'^server$\\'; then',
+              '  sudo docker stop server',
+              '  sudo docker rm server',
+              'fi',
+              'sudo docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}',
+              'sudo docker tag chaeyeon1234/next-pick:${GITHUB_SHA::7} next-pick',
+              'sudo docker run -d --name server -p 8080:8080 next-pick'
             ]" \
             --output text
-        shell: /usr/bin/bash -e
-        env:
-          JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/11.0.24-8/x64
-          AWS_DEFAULT_REGION: ap-northeast-2
-          AWS_REGION: ap-northeast-2
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
