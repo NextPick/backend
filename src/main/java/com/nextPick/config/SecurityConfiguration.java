@@ -28,12 +28,10 @@ import java.util.Collections;
 public class SecurityConfiguration {
     private final JwtTokenizer jwtTokenizer;
     private final CustomAuthorityUtils authorityUtils;
-    private final MemberRepository memberRepository;
 
-    public SecurityConfiguration(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils, MemberRepository memberRepository) {
+    public SecurityConfiguration(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils) {
         this.jwtTokenizer = jwtTokenizer;
         this.authorityUtils = authorityUtils;
-        this.memberRepository = memberRepository;
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -55,7 +53,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .antMatchers("/api/upload-audio").permitAll()  // 파일 업로드 경로 인증 필요 없음
                         .antMatchers("/members/login", "/members/**").permitAll()  // 로그인 경로 인증 필요 없음
-                        .anyRequest().authenticated());  // 그 외의 모든 요청은 인증 필요
+                        .anyRequest().permitAll()
+                );
         return http.build();
     }
 
@@ -72,7 +71,7 @@ public class SecurityConfiguration {
         configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTION"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh", "Location"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
