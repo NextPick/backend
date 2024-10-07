@@ -1,38 +1,31 @@
-name: Java CI with Gradle
+name: Deploy to AWS
 
 on:
   push:
-    branches: [ main, dev ]
+    branches:
+      - main, dev
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Java
+        uses: actions/setup-java@v1
         with:
           java-version: '11'
-          distribution: 'zulu'
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew build
-      - name: Docker build and push
-        env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-        run: |
-          echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
-          docker build -t chaeyeon1234/next-pick:${GITHUB_SHA::7} .
-          docker push chaeyeon1234/next-pick:${GITHUB_SHA::7}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
-      - name: Deploy to Server
+
+      - name: Deploy to EC2
         run: |
           aws ssm send-command \
             --instance-ids i-060f949b84e77e10a \
@@ -41,6 +34,13 @@ jobs:
               'docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}',
               'docker stop next-pick-container || true',
               'docker rm next-pick-container || true',
-              'docker run -d —name next-pick-container -p 8080:8080 chaeyeon1234/next-pick:${GITHUB_SHA::7}'
+              'docker run -d --name next-pick-container -p 8080:8080 chaeyeon1234/next-pick:${GITHUB_SHA::7}'
             ]" \
-            —output text
+            --output text
+        shell: /usr/bin/bash -e
+        env:
+          JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/11.0.24-8/x64
+          AWS_DEFAULT_REGION: ap-northeast-2
+          AWS_REGION: ap-northeast-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
