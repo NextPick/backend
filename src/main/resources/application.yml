@@ -4,9 +4,9 @@ spring:
   #      host: 127.0.0.1
   #      port: 6379
   datasource:
-    url: ${{ secrets.AWS_RDS_URL }}
-    username: ${{ secrets.DATASOURCE_USERNAME }}
-    password: ${{ secrets.DATASOURCE_PASSWORD }}
+    url: ${AWS_RDS_URL}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     defer-datasource-initialization: true

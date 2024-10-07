@@ -20,6 +20,10 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew build
+        env:
+          AWS_RDS_URL: ${{ secrets.AWS_RDS_URL }}
+          RDS_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          RDS_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
       - name: Docker build
         run: |
           docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
