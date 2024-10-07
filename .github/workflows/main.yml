@@ -23,8 +23,8 @@ jobs:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
         run: |
-          echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME --password-stdin
-          docker build -f Dockerfile -t chaeyeon1234/next-pick:${GITHUB_SHA::7} .
+          echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USERNAME —password-stdin
+          docker build -t chaeyeon1234/next-pick:${GITHUB_SHA::7} .
           docker push chaeyeon1234/next-pick:${GITHUB_SHA::7}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
