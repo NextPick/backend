@@ -24,12 +24,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
-
 @Configuration
 public class SecurityConfiguration {
     private final JwtTokenizer jwtTokenizer;
     private final CustomAuthorityUtils authorityUtils;
-//    private final RedisTemplate<String, Object> redisTemplate;
     private final MemberRepository memberRepository;
 
     public SecurityConfiguration(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils, MemberRepository memberRepository) {
@@ -37,7 +35,6 @@ public class SecurityConfiguration {
         this.authorityUtils = authorityUtils;
         this.memberRepository = memberRepository;
     }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -53,17 +50,21 @@ public class SecurityConfiguration {
                 .authenticationEntryPoint(new MemberAuthenticationEntryPoint())
                 .accessDeniedHandler(new MemberAccessDeniedHandler())
                 .and()
-                .apply(new CustomFilterConfigurer())
+                .apply(new CustomFilterConfigurer())  // Jwt 필터 적용
                 .and()
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll());
+                        .antMatchers("/api/upload-audio").permitAll()  // 파일 업로드 경로 인증 필요 없음
+                        .antMatchers("/members/login", "/members/**").permitAll()  // 로그인 경로 인증 필요 없음
+                        .anyRequest().authenticated());  // 그 외의 모든 요청은 인증 필요
         return http.build();
-
     }
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
@@ -93,6 +94,4 @@ public class SecurityConfiguration {
                     .addFilterAfter(jwtVerificationFilter, JwtAuthenticationFilter.class);
         }
     }
-    }
-
-
+}

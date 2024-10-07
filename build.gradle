@@ -37,6 +37,10 @@ dependencies {
 	implementation 'com.google.code.gson:gson:2.8.8'
 	implementation 'software.amazon.awssdk:s3:2.15.19'
 
+//	//Naver Cloud
+//	implementation 'com.navercloud:cloudauth:1.2.3'
+//	implementation 'com.navercloud:ncloud-sdk-java:1.5.6'
+
 
 	//Spring Boot
 //	implementation 'org.springframework.boot:spring-boot-starter-mail'
@@ -47,6 +51,9 @@ dependencies {
 
 	//AWS
 //	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	implementation 'software.amazon.awssdk:s3:2.17.106'
+	implementation 'software.amazon.awssdk:auth:2.17.106'
+	implementation 'software.amazon.awssdk:regions:2.17.106'
 
 	//KOMORAN
 
