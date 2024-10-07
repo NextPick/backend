@@ -9,6 +9,5 @@ COPY ${JAR_FILE} app.jar
 
 COPY src/main/resources/application.yml /application.yml
 
-
 # (4) jar 파일 실행
-ENTRYPOINT ["java", "-jar", "/app.jar", "--spring.config.location=classpath:/application.yml,/application.yml"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-Dspring.config.location=classpath:/application.yml,/secret/application-secret.yml", "-jar", "/myapp.jar"]
