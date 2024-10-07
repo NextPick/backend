@@ -11,12 +11,6 @@ javadoc.options.encoding = 'UTF-8'
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
-jar {
-	from {
-		configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-	}
-	include '**/*.yml'
-}
 
 java {
 	toolchain {
