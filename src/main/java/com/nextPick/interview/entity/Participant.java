@@ -1,17 +1,16 @@
 package com.nextPick.interview.entity;
 
 import com.nextPick.member.entity.Member;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Participant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

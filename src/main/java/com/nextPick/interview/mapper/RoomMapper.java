@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 public interface RoomMapper {
     Room roomDtoPostToRoom(RoomDto.Post requestBody);
 
-    default RoomDto.Response roomsCountToRoomDtoResponse(Long roomsCount) {
+    default RoomDto.Response roomsCountToRoomDtoResponse(int roomsCount) {
         RoomDto.Response response = new RoomDto.Response();
         response.setRoom_count(roomsCount);
 

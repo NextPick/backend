@@ -13,6 +13,6 @@ public class RoomDto {
     @Getter
     @Setter
     public static class Response {
-        private Long room_count;
+        private int room_count;
     }
 }

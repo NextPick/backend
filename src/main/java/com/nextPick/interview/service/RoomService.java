@@ -14,19 +14,27 @@ import com.nextPick.member.service.MemberService;
 import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class RoomService extends ExtractMemberAndVerify {
     private final RoomRepository roomRepository;
-    private final MemberService memberService;
     private final MemberRepository memberRepository;
     private final ParticipantRepository participantRepository;
+    private final ParticipantService participantService;
+
+    public RoomService(RoomRepository roomRepository, MemberRepository memberRepository, ParticipantRepository participantRepository, @Lazy ParticipantService participantService) {
+        this.roomRepository = roomRepository;
+        this.memberRepository = memberRepository;
+        this.participantRepository = participantRepository;
+        this.participantService = participantService;
+    }
 
     public Room createRoom(Room room) {
         // 토큰 이용하여 member 찾기
@@ -38,7 +46,7 @@ public class RoomService extends ExtractMemberAndVerify {
        // repository 방 저장
        Room savedRoom = roomRepository.save(room);
 
-       // 방 만든 사람 참가자로 넣어주기
+       // 방 만든 사람 참가자에 넣기
        Participant participant = new Participant();
        participant.setMember(member);
        participant.setRoom(room);
@@ -47,8 +55,20 @@ public class RoomService extends ExtractMemberAndVerify {
        return savedRoom;
     }
 
-    public Long findRoomsCount() {
-        return (long) roomRepository.findAll().size();
+    public int findRoomsCount() {
+        // 전체 방 찾기
+        List<Room> rooms = roomRepository.findAll();
+        // 들어갈 수 있는 방
+        int canEnterRoomCount = 0;
+        // 방 하나씩 참가자 4명이하 방 찾기
+        for (Room room : rooms) {
+            int participantCount = participantService.findParticipantCount(room.getUuid());
+            if (participantCount < 4) {
+                canEnterRoomCount++;
+            }
+        }
+
+        return canEnterRoomCount;
     }
 
     public void deleteRoom(String uuid) {
@@ -60,8 +80,7 @@ public class RoomService extends ExtractMemberAndVerify {
 
     public Room findRoomByUuid(String uuid) {
         Optional<Room> optionalRoom = roomRepository.findByUuid(uuid);
-        Room findRoom = optionalRoom.orElseThrow(() ->
+        return optionalRoom.orElseThrow(() ->
                 new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND));
-        return findRoom;
     }
 }

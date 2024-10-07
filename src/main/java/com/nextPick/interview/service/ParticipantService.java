@@ -12,11 +12,9 @@ import com.nextPick.member.service.MemberService;
 import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,19 +23,22 @@ import java.util.List;
 public class ParticipantService extends ExtractMemberAndVerify {
     private final ParticipantRepository participantRepository;
     private final RoomService roomService;
-    private final MemberService memberService;
     private final MemberRepository memberRepository;
     private final RoomRepository roomRepository;
 
+    @Transactional
     public Participant createParticipant(String uuid) {
+        if (findParticipantCount(uuid) == 4) {
+            throw new BusinessLogicException(ExceptionCode.PARTICIPANT_FULL);
+        }
         Participant participant = new Participant();
-        Member member = extractMemberFromPrincipal(memberRepository);
-        participant.setMember(member);
+        participant.setMember(extractMemberFromPrincipal(memberRepository));
         participant.setRoom(roomService.findRoomByUuid(uuid));
 
         return participantRepository.save(participant);
     }
 
+    @Transactional
     public List<Participant> findParticipants(String uuid) {
         List<Participant> participants = participantRepository.findAllByRoomUuid(uuid);
         if (participants.isEmpty()) {
@@ -46,13 +47,19 @@ public class ParticipantService extends ExtractMemberAndVerify {
         return participants;
     }
 
+    @Transactional
     public void deleteParticipant(String uuid) {
         Member member = extractMemberFromPrincipal(memberRepository);
         Room room = roomService.findRoomByUuid(uuid);
         participantRepository.findByRoomAndMember(
-                room, member).ifPresent(participant -> participantRepository.delete(participant));
+                room, member).ifPresent(participantRepository::delete);
         if (participantRepository.findByRoom(room).isEmpty()) {
             roomRepository.delete(room);
         }
+    }
+
+    @Transactional
+    public int findParticipantCount(String uuid) {
+        return participantRepository.findAllByRoomUuid(uuid).size();
     }
 }

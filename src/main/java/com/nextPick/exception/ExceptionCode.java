@@ -21,7 +21,8 @@ public enum ExceptionCode {
     ROOM_NOT_FOUND(404, "Room Not Found"),
 
     // participant
-    PARTICIPANT_NOT_FOUND(404, "Participant Not Found");
+    PARTICIPANT_NOT_FOUND(404, "Participant Not Found"),
+    PARTICIPANT_FULL(404, "Participant Full");
 
     @Getter
     private int statusCode;

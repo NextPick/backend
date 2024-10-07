@@ -35,7 +35,7 @@ public class RoomController {
 
     @GetMapping
     public ResponseEntity getRoomsCount() {
-        Long roomsCount = service.findRoomsCount();
+        int roomsCount = service.findRoomsCount();
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(mapper.roomsCountToRoomDtoResponse(roomsCount)), HttpStatus.OK);

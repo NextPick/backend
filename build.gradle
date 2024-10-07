@@ -88,6 +88,12 @@ dependencies {
 
 	// stompJS
 	implementation 'org.webjars:stomp-websocket:2.3.4'
+
+	// web
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// devtools
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
 
 tasks.named('javadoc') {
