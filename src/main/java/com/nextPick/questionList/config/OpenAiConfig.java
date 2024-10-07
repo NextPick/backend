@@ -1,4 +1,4 @@
-package com.nextPick.api.openai.config;
+package com.nextPick.questionList.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
