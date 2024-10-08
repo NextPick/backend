@@ -31,4 +31,7 @@ public class Room {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "room")
     private List<Participant> participants;
+
+    @Column
+    private String sessionId;
 }

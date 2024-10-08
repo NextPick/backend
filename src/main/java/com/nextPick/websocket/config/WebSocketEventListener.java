@@ -42,6 +42,9 @@ public class WebSocketEventListener {
         String roomId = nativeHeaders.get("roomId").get(0);
         String camKey = nativeHeaders.get("camKey").get(0);
 
+        // member_type이 멘토인지 확인 아니면 에러
+
+
         //전역 함수에서 checkRoomId map을 가져와, 해당 세션 Id에 대한 룸 Id 가 있는지 확인
         if(!globalVariables.getCheckRoomId().containsKey(sessionId)){
             //없다는 추가 해준다.
