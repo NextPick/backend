@@ -62,6 +62,13 @@ public class MemberDto {
 
         private Integer guiltyScore;
     }
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class AdminPatch {
+        private Member.memberType memberType;
+        private Integer guiltyScore;
+    }
 
     @Getter
     @Setter

@@ -2,6 +2,7 @@ package com.nextPick.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.nextPick.report.entity.Report;
 import com.nextPick.board.entity.Board;
 import com.nextPick.boardLike.entity.BoardLike;
 import com.nextPick.solves.entity.Solves;
@@ -48,9 +49,20 @@ public class Member {
     private List<String> roles = new ArrayList<>();
 
     @Enumerated(value = EnumType.STRING)
-    @Column(length = 20, nullable = false)
+    @Column(name = "member_status", length = 20, nullable = false)
     private memberStatus status = memberStatus.ACTIVE;
 
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "member_type", length = 20, nullable = false)
+    private memberType type = memberType.MEMTEE;
+
+    @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Report> reporter = new ArrayList<>();
+
+    @OneToMany(mappedBy = "respondent", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Report> respondent = new ArrayList<>();
     @JsonManagedReference
     @OneToMany(mappedBy = "member")
     private List<Board> boards = new ArrayList<>();
@@ -67,7 +79,8 @@ public class Member {
     public enum memberStatus {
         ACTIVE("유효한 회원"),
         DELETED("삭제된 회원"),
-        PENDING("보류된 회원");
+        PENDING("보류된 회원"),
+        BAN("이용정지 당한 회원");
 
         private final String status;
 
@@ -84,6 +97,18 @@ public class Member {
         private final String status;
 
         memberOccupation(String status) {
+            this.status = status;
+        }
+    }
+
+    @Getter
+    public enum memberType {
+        MENTOR("맨토"),
+        MEMTEE("맨티");
+
+        private final String status;
+
+        memberType(String status) {
             this.status = status;
         }
     }
