@@ -1,5 +1,7 @@
 package com.nextPick.member.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.nextPick.solves.entity.Solves;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -45,6 +47,10 @@ public class Member {
     @Enumerated(value = EnumType.STRING)
     @Column(length = 20, nullable = false)
     private memberStatus status = memberStatus.ACTIVE;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference
+    private List<Solves> solvesList;
 
     @Getter
     public enum memberStatus {
