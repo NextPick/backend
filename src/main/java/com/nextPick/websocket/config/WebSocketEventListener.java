@@ -1,5 +1,7 @@
 package com.nextPick.websocket.config;
 
+import com.nextPick.exception.BusinessLogicException;
+import com.nextPick.exception.ExceptionCode;
 import com.nextPick.websocket.dto.CommonResp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
@@ -26,9 +29,9 @@ public class WebSocketEventListener {
 
     @Autowired
     private GlobalVariables globalVariables;
-    @Autowired
-    private RequestContextFilter requestContextFilter;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @EventListener
     public void handleWebsocketConnectListener(SessionConnectedEvent event) {
@@ -43,13 +46,17 @@ public class WebSocketEventListener {
         if(!globalVariables.getCheckRoomId().containsKey(sessionId)){
             //없다는 추가 해준다.
             globalVariables.getCheckRoomId().put(sessionId, roomId);
-
         }
 
         //전역 함수에서 checkRoomIdCount map 를 가져와, 해당 룸 Id에 대한 유저수가 있는지 확인
-        if(globalVariables.getCheckRoomIdCount().containsKey(roomId)){
-            //있다면 유저수를 +1 해준다.
-            globalVariables.getCheckRoomIdCount().put(roomId, globalVariables.getCheckRoomIdCount().get(roomId)+1);
+        if(globalVariables.getCheckRoomIdCount().containsKey(roomId)) {
+            // 만약 룸 인원이 4명일 경우 못 들어오게 막기
+            if (globalVariables.getCheckRoomIdCount().size() >= 4) {
+                throw new BusinessLogicException(ExceptionCode.PARTICIPANT_FULL);
+            } else {
+                //4명 이하라면 유저수를 +1 해준다.
+                globalVariables.getCheckRoomIdCount().put(roomId, globalVariables.getCheckRoomIdCount().get(roomId) + 1);
+            }
         }
         else{
             //아니면 1로 추가해준다.
@@ -61,6 +68,8 @@ public class WebSocketEventListener {
             //없다면 추가해준다.
             globalVariables.getCheckCamKey().put(sessionId, camKey);
         }
+
+        messagingTemplate.convertAndSend("/topic/roomId/" + sessionId, roomId);
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
                 + "룸 ID : " + roomId + "\n"
