@@ -1,6 +1,10 @@
 package com.nextPick.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.nextPick.board.entity.Board;
+import com.nextPick.boardLike.entity.BoardLike;
+
 import com.nextPick.solves.entity.Solves;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,6 +51,14 @@ public class Member {
     @Enumerated(value = EnumType.STRING)
     @Column(length = 20, nullable = false)
     private memberStatus status = memberStatus.ACTIVE;
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "member")
+    private List<Board> boards = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    @JsonManagedReference
+    private List<BoardLike> boardLikeList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
