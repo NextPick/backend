@@ -4,11 +4,13 @@ import com.nextPick.api.openai.dto.ChatGPTRequest;
 import com.nextPick.api.openai.dto.ChatGPTResponse;
 import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;
+import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
 import com.nextPick.questionCategory.entity.QuestionCategory;
 import com.nextPick.questionCategory.repository.QuestionCategoryRepository;
 import com.nextPick.questionList.entity.QuestionList;
 import com.nextPick.questionList.repository.QuestionListRepository;
+import com.nextPick.solves.service.SolvesService;
 import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,7 @@ public class QuestionListService extends ExtractMemberAndVerify {
     private final MemberRepository memberRepository;
     private final QuestionListRepository questionListRepository;
     private final QuestionCategoryRepository questionCategoryRepository;
+    private final SolvesService solvesService;
 
     public void createQuestionList(QuestionList questionList,long questionCategoryId) {
         QuestionCategory questionCategory = questionCategoryRepository.findById(questionCategoryId)
@@ -98,7 +101,8 @@ public class QuestionListService extends ExtractMemberAndVerify {
         return questionListRepository.findRandomQuestionsByCategory(questionCategoryId,size);
     }
 
-    public boolean scoringInterview (long questionListId, String userResponse){
+    public boolean scoringInterview (long questionListId, String userResponse) {
+        Member member = extractMemberFromPrincipal(memberRepository);
         QuestionList question = questionListRepository.findById(questionListId)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_NOT_FOUND));
         String prompt = "넌 이제 면접관이야 너는 문제와 해당 문제에 대한 대답을 가지고 있어.\n" +
@@ -119,8 +123,10 @@ public class QuestionListService extends ExtractMemberAndVerify {
         ChatGPTRequest request = new ChatGPTRequest(model, prompt);
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
         String GPTAnswer =  chatGPTResponse.getChoices().get(0).getMessage().getContent();
+        boolean result = checkAnswer(GPTAnswer);
         System.out.println(GPTAnswer);
-        return checkAnswer(GPTAnswer);
+        solvesService.createOrUpdateSolves(question,member,result,userResponse);
+        return result;
     }
 
     public boolean checkAnswer(String text) {
