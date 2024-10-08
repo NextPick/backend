@@ -6,6 +6,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExceptionCode {
 
+    //Feedbacks
+    INTERVIEW_NOT_FOUND(404, "면접 피드백을 찾을 수 없습니다."),
+    MENTOR_FEEDBACK_NOT_FOUND(404, "멘토 피드백을 찾을 수 없습니다."),
+    MENTOR_FEEDBACK_EXISTS(409, "멘토 피드백이 이미 존재합니다."),
+
     //Reports
     REPORTS_NOT_FOUND(404, "신고 내역을 찾을 수 없습니다."),
     REPORTS_EXISTS(409, "신고 내역이 이미 존재합니다."),

@@ -24,7 +24,7 @@ public class ReportDto {
         private long reporterId;
         private long respondentId;
         private String content;
-        private LocalDateTime createAt;
+        private LocalDateTime createdAt;
     }
 
     @Getter
@@ -37,6 +37,6 @@ public class ReportDto {
         private long reporterId;
         private long respondentId;
         private String content;
-        private LocalDateTime createAt;
+        private LocalDateTime createdAt;
     }
 }
