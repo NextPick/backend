@@ -2,6 +2,8 @@ package com.nextPick.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.nextPick.feedbacks.interview.entity.Interview;
+import com.nextPick.feedbacks.mentor.entity.Mentor;
 import com.nextPick.report.entity.Report;
 import com.nextPick.board.entity.Board;
 import com.nextPick.boardLike.entity.BoardLike;
@@ -63,6 +65,23 @@ public class Member {
     @OneToMany(mappedBy = "respondent", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Report> respondent = new ArrayList<>();
+
+    @OneToMany(mappedBy = "mentor", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Interview> interviewMentor = new ArrayList<>();
+
+    @OneToMany(mappedBy = "mentee", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Interview> interviewMentee = new ArrayList<>();
+
+    @OneToMany(mappedBy = "mentor", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Mentor> mentorMentor = new ArrayList<>();
+
+    @OneToMany(mappedBy = "mentee", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Mentor> mentorMentee = new ArrayList<>();
+
     @JsonManagedReference
     @OneToMany(mappedBy = "member")
     private List<Board> boards = new ArrayList<>();

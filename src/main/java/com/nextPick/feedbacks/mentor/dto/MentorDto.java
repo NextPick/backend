@@ -26,8 +26,20 @@ public class MentorDto {
     @AllArgsConstructor
     @Builder
     public static class Responses{
-        private String mentor;
         private String content;
         private String createdAt;
+        private Integer startRating;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ResponsesForAdmin{
+        private String name;
+        private String content;
+        private String createdAt;
+        private Integer startRating;
     }
 }

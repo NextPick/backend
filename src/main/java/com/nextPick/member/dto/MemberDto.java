@@ -98,6 +98,7 @@ public class MemberDto {
         private String nickname;
         private Member.memberOccupation occupation;
         private Member.memberStatus status;
+        private Member.memberType type;
         private List<String> roles;
     }
 }

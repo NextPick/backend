@@ -12,7 +12,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-@Entity(name = "interview_feedbacks")
+@Entity(name = "mentor_feedbacks")
 @Getter
 @Setter
 @NoArgsConstructor

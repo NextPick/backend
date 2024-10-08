@@ -62,7 +62,7 @@ public class MentorController {
                 service.getMentorPage(page - 1, size,true);
         List<Mentor> MentorList = pageMentor.getContent();
         return new ResponseEntity<>(
-                new MultiResponseDto<>(mentorMapper.mentorListToMentorResponsesDto(MentorList), pageMentor),
+                new MultiResponseDto<>(mentorMapper.mentorListToMentorResponsesDtoForAdmin(MentorList), pageMentor),
                 HttpStatus.OK);
     }
 }
