@@ -9,13 +9,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface QuestionListRepository extends JpaRepository<QuestionList, Long> {
+
+    Optional<QuestionList> findByQuestion(String questionList);
 
     @Query("SELECT b FROM question_list b WHERE "
             + "(:questionCategoryId IS NULL OR b.questionCategory.id = :questionCategoryId) AND "
             + "(:keyword IS NULL OR b.question LIKE %:keyword%)")
-    Page<QuestionList> findByManyFilter(@Param("questionCategoryId") long questionCategoryId,
+    Page<QuestionList> findByManyFilter(@Param("questionCategoryId") Long questionCategoryId,
                                         @Param("keyword") String keyword,
                                         Pageable pageable);
 

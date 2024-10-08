@@ -4,6 +4,7 @@ import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
+import com.nextPick.questionCategory.repository.QuestionCategoryRepository;
 import com.nextPick.questionList.entity.QuestionList;
 import com.nextPick.solves.entity.Solves;
 import com.nextPick.solves.repository.SolvesRepository;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SolvesService extends ExtractMemberAndVerify {
     private final SolvesRepository solvesRepository;
     private final MemberRepository memberRepository;
+    private final QuestionCategoryRepository questionCategoryRepository;
 
     public void createOrUpdateSolves(QuestionList questionList, Member member,
                                      boolean correct, String myAnswer) {
@@ -43,11 +45,16 @@ public class SolvesService extends ExtractMemberAndVerify {
 
 
 
-    public Page<Solves> getSolvesPage(int page, int size, long questionCategoryId,
+    public Page<Solves> getSolvesPage(int page, int size, Long questionCategoryId,
                                                 String keyword, String sort, boolean correct) {
         Member member = extractMemberFromPrincipal(memberRepository);
         Sort sortBy;
         Pageable pageable;
+        if(questionCategoryId == -1)
+            questionCategoryId = null;
+        else
+            questionCategoryRepository.findById(questionCategoryId)
+                    .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_CATEGORY_NOT_FOUND));
         switch (sort) {
             case "correct_percent_asc":
                 sortBy = Sort.by("questionList.correctRate").ascending();
