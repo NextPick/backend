@@ -6,6 +6,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExceptionCode {
 
+    //Solves
+    SOLVE_NOT_FOUND(404, "푼 문제를 찾을 수 없습니다."),
+
     //questionCategory
     QUESTION_CATEGORY_NOT_FOUND(404, "문제의 카테고리를 찾을 수 없습니다."),
 
