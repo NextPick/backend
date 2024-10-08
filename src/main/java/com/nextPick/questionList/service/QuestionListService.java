@@ -47,11 +47,13 @@ public class QuestionListService extends ExtractMemberAndVerify {
     public void createQuestionList(QuestionList questionList,long questionCategoryId) {
         QuestionCategory questionCategory = questionCategoryRepository.findById(questionCategoryId)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_CATEGORY_NOT_FOUND));
+        questionListRepository.findByQuestion(questionList.getQuestion())
+                .ifPresent(p -> { throw new BusinessLogicException(ExceptionCode.QUESTION_EXISTS);});
         questionList.setQuestionCategory(questionCategory);
         questionListRepository.save(questionList);
     }
 
-    public QuestionList updateQuestionList(QuestionList questionList,long questionListId) {
+    public QuestionList updateQuestionList(QuestionList questionList,Long questionCategoryId,long questionListId) {
         QuestionList findQuestionList = questionListRepository.findById(questionListId)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_NOT_FOUND));
 
@@ -59,6 +61,21 @@ public class QuestionListService extends ExtractMemberAndVerify {
                 .ifPresent(question -> findQuestionList.setQuestion(question));
         Optional.ofNullable(questionList.getAnswer())
                 .ifPresent(answer -> findQuestionList.setAnswer(answer));
+        Optional.of(questionList.getCorrectCount())
+                .ifPresent(correctCount -> findQuestionList.setCorrectCount(correctCount));
+        Optional.of(questionList.getWrongCount())
+                .ifPresent(wrongCount -> findQuestionList.setWrongCount(wrongCount));
+//        Optional.of(questionList.getQuestionCategory())
+//                        .ifPresent(category -> findQuestionList.setQuestionCategory());
+
+        if(questionCategoryId != 0) {
+            QuestionCategory findquestionCategory = questionCategoryRepository.findById(questionCategoryId)
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.QUESTION_CATEGORY_NOT_FOUND));
+            findQuestionList.setQuestionCategory(findquestionCategory);
+        }
+        float correctRateFloat = (float) questionList.getCorrectCount() /(questionList.getWrongCount()+questionList.getCorrectCount());
+        int CorrectRate = (int)(correctRateFloat*100);
+        findQuestionList.setCorrectRate(CorrectRate);
 
         return questionListRepository.save(findQuestionList);
     }
@@ -74,10 +91,17 @@ public class QuestionListService extends ExtractMemberAndVerify {
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_NOT_FOUND));
     }
 
-    public Page<QuestionList> findQuestionLists(int size, int page, long questionCategoryId,
+    public Page<QuestionList> findQuestionLists(int page, int size, Long questionCategoryId,
                                                 String keyword, String sort) {
         Sort sortBy;
         Pageable pageable;
+        if(questionCategoryId == -1)
+            questionCategoryId = null;
+        else
+            questionCategoryRepository.findById(questionCategoryId)
+                    .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_CATEGORY_NOT_FOUND));
+//        if(keyword.equals("*"))
+//            keyword = null;
         switch (sort) {
             case "correct_percent_asc":
                 sortBy = Sort.by("correctRate").ascending();
@@ -91,13 +115,11 @@ public class QuestionListService extends ExtractMemberAndVerify {
             default:
                 throw new IllegalArgumentException("Invalid sort type: " + sort);
         }
-//        QuestionCategory questionCategory = questionCategoryRepository.findById(questionCategoryId)
-//                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_CATEGORY_NOT_FOUND));
         pageable = PageRequest.of(page, size, sortBy);
         return questionListRepository.findByManyFilter(questionCategoryId,keyword,pageable);
     }
 
-    public List<QuestionList> findQuestionLists(int size, long questionCategoryId) {
+    public List<QuestionList> findQuestionLists(int size, Long questionCategoryId) {
         return questionListRepository.findRandomQuestionsByCategory(questionCategoryId,size);
     }
 
@@ -123,23 +145,34 @@ public class QuestionListService extends ExtractMemberAndVerify {
         ChatGPTRequest request = new ChatGPTRequest(model, prompt);
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
         String GPTAnswer =  chatGPTResponse.getChoices().get(0).getMessage().getContent();
-        boolean result = checkAnswer(GPTAnswer);
+        boolean result = checkAnswer(GPTAnswer,question);
         System.out.println(GPTAnswer);
         solvesService.createOrUpdateSolves(question,member,result,userResponse);
         return result;
     }
 
-    public boolean checkAnswer(String text) {
+    public boolean checkAnswer(String text, QuestionList question) {
         // 각 라인을 분리
         String[] lines = text.split("\n");
+        boolean result = false;
 
         // "판정 :" 라인을 찾고 "정답"이 있는지 확인
         for (String line : lines) {
             if (line.startsWith("판정 : ") && line.contains("정답")) {
-                return true;
+                questionListRepository.save(question);
+                result = true;
             }
         }
 
-        return false;
+        if(result)
+            question.setCorrectCount(question.getCorrectCount()+1);
+        else
+            question.setWrongCount(question.getWrongCount()+1);
+
+        float correctRateFloat = (float) question.getCorrectCount() /(question.getWrongCount()+question.getCorrectCount());
+        int CorrectRate = (int)(correctRateFloat*100);
+        question.setCorrectRate(CorrectRate);
+        questionListRepository.save(question);
+        return result;
     }
 }

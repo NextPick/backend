@@ -19,7 +19,7 @@ public interface SolvesRepository extends JpaRepository<Solves, Long> {
             + "(:questionCategoryId IS NULL OR q.questionCategory.id = :questionCategoryId) AND "
             + "b.correct = :correct AND "
             + "(:keyword IS NULL OR q.question LIKE %:keyword%) AND "
-            + "b.member.id = :member")
+            + "b.member = :member")
     Page<Solves> findByManyFilterAndSortCorrectPercent(
             @Param("questionCategoryId") Long questionCategoryId,
             @Param("keyword") String keyword,

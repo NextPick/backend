@@ -34,6 +34,15 @@ public class QuestionListDto {
 
         @NotNull
         private String question;
+
+        @NotNull
+        private int correctCount;
+
+        @NotNull
+        private int wrongCount;
+
+        @NotNull
+        private long QuestionCategoryId;
     }
 
     @Getter

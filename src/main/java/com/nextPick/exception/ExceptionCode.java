@@ -14,6 +14,7 @@ public enum ExceptionCode {
 
     //questionList
     QUESTION_NOT_FOUND(404, "문제를 찾을 수 없습니다."),
+    QUESTION_EXISTS(409, "문제가 이미 존재합니다."),
 
     //member
     MEMBER_NOT_FOUND(404,"Member Not Found"),
