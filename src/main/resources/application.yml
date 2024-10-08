@@ -7,7 +7,7 @@ spring:
     url: ${AWS_RDS_URL}
     username: ${AWS_RDS_USERNAME}
     password: ${AWS_RDS_PASSWORD}
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     defer-datasource-initialization: true
     hibernate:
