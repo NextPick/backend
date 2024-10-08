@@ -69,7 +69,7 @@ public class MemberController {
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
 
-    @PatchMapping("/{member-id}")
+    @PatchMapping("/admin/{member-id}")
     public ResponseEntity patchMember(@PathVariable("question-id") @Positive long memberId,
                                       @Valid @RequestBody MemberDto.AdminPatch adminPatch) {
         Member member = service.updateMemberForAdmin(memberMapper.memberAdminPatchDtoToMember(adminPatch),memberId);

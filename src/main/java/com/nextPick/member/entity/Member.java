@@ -56,7 +56,7 @@ public class Member {
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "member_type", length = 20, nullable = false)
-    private memberType type = memberType.MEMTEE;
+    private memberType type = memberType.MENTEE;
 
     @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
     @JsonManagedReference
@@ -123,7 +123,7 @@ public class Member {
     @Getter
     public enum memberType {
         MENTOR("맨토"),
-        MEMTEE("맨티");
+        MENTEE("맨티");
 
         private final String status;
 
