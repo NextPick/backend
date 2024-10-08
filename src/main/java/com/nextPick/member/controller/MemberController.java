@@ -68,12 +68,12 @@ public class MemberController {
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
 
-    @PatchMapping
-    public ResponseEntity patchMember(@Valid @RequestBody MemberDto.Patch patch) {
-        Member member = service.updateMember(patch);
-        return new ResponseEntity<>(
-                new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
-    }
+//    @PatchMapping
+//    public ResponseEntity patchMember(@Valid @RequestBody MemberDto.Patch patch) {
+//        Member member = service.updateMember(patch);
+//        return new ResponseEntity<>(
+//                new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
+//    }
 
     @DeleteMapping
     public ResponseEntity deleteMember() {
@@ -90,7 +90,7 @@ public class MemberController {
 
     @PostMapping("/verify/nickname")
     public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck){
-        return service.dupCheckEmail(duplicationNicknameCheck.getNickName()) ?
+        return service.dupCheckNickname(duplicationNicknameCheck.getNickName()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
     }
