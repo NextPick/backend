@@ -29,7 +29,7 @@ public class SolvesController {
     @GetMapping
     public ResponseEntity getQuestionLists(@Positive @RequestParam int page,
                                            @Positive @RequestParam int size,
-                                           @RequestParam(name = "category") long questionCategoryId,
+                                           @RequestParam(name = "category") Long questionCategoryId,
                                            @RequestParam(name = "keyword") String keyword,
                                            @RequestParam(name = "correct") boolean correct,
                                            @RequestParam(name = "sort") String sort ){

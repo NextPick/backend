@@ -42,7 +42,7 @@ public class QuestionListController {
     @PatchMapping("/admin/{question-id}")
     public ResponseEntity updateQuestionList(@PathVariable("question-id") @Positive long questionId,
                                              @Valid @RequestBody QuestionListDto.Patch requestBody) {
-        QuestionList questionList = service.updateQuestionList(mapper.questionListPatchToQuestionList(requestBody),questionId);
+        QuestionList questionList = service.updateQuestionList(mapper.questionListPatchToQuestionList(requestBody), requestBody.getQuestionCategoryId(), questionId);
         return new ResponseEntity<>(
                 new SingleResponseDto<>(mapper.questionListToQuestionListDtoResponse(questionList)), HttpStatus.OK);
     }
@@ -63,7 +63,7 @@ public class QuestionListController {
     @GetMapping
     public ResponseEntity getQuestionLists(@Positive @RequestParam int page,
                                            @Positive @RequestParam int size,
-                                           @RequestParam(name = "category") long questionCategoryId,
+                                           @RequestParam(name = "category") Long questionCategoryId,
                                            @RequestParam(name = "keyword") String keyword,
                                            @RequestParam(name = "type") String type,
                                            @RequestParam(name = "sort") String sort ){
