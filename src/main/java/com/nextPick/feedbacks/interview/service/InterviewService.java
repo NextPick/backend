@@ -6,7 +6,6 @@ import com.nextPick.feedbacks.interview.entity.Interview;
 import com.nextPick.feedbacks.interview.repository.InterviewRepository;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
-import com.nextPick.report.entity.Report;
 import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,7 +43,7 @@ public class InterviewService extends ExtractMemberAndVerify {
             return interviewRepository.findAll(pageable);
         }else{
             Member mentee = extractMemberFromPrincipal(memberRepository);
-            return interviewRepository.findAllMentee(mentee,pageable);
+            return interviewRepository.findAllByMentee(mentee,pageable);
         }
     }
 

@@ -20,6 +20,16 @@ public class InterviewDto {
     @AllArgsConstructor
     @Builder
     public static class Responses{
+        private String content;
+        private String createdAt;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ResponsesForAdmin{
         private String mentor;
         private String content;
         private String createdAt;

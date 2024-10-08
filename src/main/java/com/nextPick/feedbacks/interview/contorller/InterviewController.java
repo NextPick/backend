@@ -64,7 +64,7 @@ public class InterviewController {
                 service.getInterviewPage(page - 1, size,true);
         List<Interview> InterviewList = pageInterview.getContent();
         return new ResponseEntity<>(
-                new MultiResponseDto<>(interviewMapper.interviewListToInterviewResponsesDto(InterviewList), pageInterview),
+                new MultiResponseDto<>(interviewMapper.interviewListToInterviewResponsesDtoForAdmin(InterviewList), pageInterview),
                 HttpStatus.OK);
     }
 }

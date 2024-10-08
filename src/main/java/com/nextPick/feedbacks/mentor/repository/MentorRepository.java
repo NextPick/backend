@@ -1,6 +1,5 @@
 package com.nextPick.feedbacks.mentor.repository;
 
-import com.nextPick.feedbacks.interview.entity.Interview;
 import com.nextPick.feedbacks.mentor.entity.Mentor;
 import com.nextPick.member.entity.Member;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +13,7 @@ public interface MentorRepository extends JpaRepository<Mentor, Long> {
     @NotNull
     Page<Mentor> findAll(@NotNull Pageable pageable);
 
-    Page<Mentor> findAllMentor(Member mentor, Pageable pageable);
+    Page<Mentor> findAllByMentor(Member mentor, Pageable pageable);
 
     Optional<Mentor> findByMenteeAndMentorFeedbackId(Member mentee, long mentorFeedbackId);
 

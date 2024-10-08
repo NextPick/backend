@@ -55,7 +55,7 @@ public class MentorService extends ExtractMemberAndVerify {
             return mentorRepository.findAll(pageable);
         }else{
             Member mentor = extractMemberFromPrincipal(memberRepository);
-            return mentorRepository.findAllMentor(mentor,pageable);
+            return mentorRepository.findAllByMentor(mentor,pageable);
         }
     }
 
