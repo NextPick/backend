@@ -1,13 +1,11 @@
-# (1) base-image
-FROM openjdk:11
+# JDK 11 이미지 사용
+FROM openjdk:11-jdk
 
-# (2) COPY에서 사용될 경로 변수
-ARG JAR_FILE=build/libs/*.jar
+# 작업 디렉토리 설정
+WORKDIR /app
 
-# (3) jar 빌드 파일을 도커 컨테이너로 복사
-COPY ${JAR_FILE} app.jar
+# Gradle 빌드 결과물인 JAR 파일을 이미지로 복사
+COPY build/libs/*.jar app.jar
 
-COPY src/main/resources/application.yml /application.yml
-
-# (4) jar 파일 실행
-ENTRYPOINT ["java", "-jar", "/app.jar", "--spring.config.location=classpath:/application.yml"]
+# jar 파일 실행
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
