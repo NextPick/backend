@@ -1,4 +1,4 @@
-package com.nextPick.websocket.entity;
+package com.nextPick.websocket.dto;
 
 import lombok.Builder;
 import lombok.Getter;

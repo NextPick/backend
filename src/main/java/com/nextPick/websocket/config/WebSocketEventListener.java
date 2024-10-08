@@ -1,15 +1,17 @@
 package com.nextPick.websocket.config;
 
-import com.nextPick.websocket.entity.CommonResp;
+import com.nextPick.websocket.dto.CommonResp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.RequestContextFilter;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
@@ -24,6 +26,8 @@ public class WebSocketEventListener {
 
     @Autowired
     private GlobalVariables globalVariables;
+    @Autowired
+    private RequestContextFilter requestContextFilter;
 
 
     @EventListener

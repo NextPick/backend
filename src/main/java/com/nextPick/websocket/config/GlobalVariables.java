@@ -1,6 +1,6 @@
 package com.nextPick.websocket.config;
 
-import com.nextPick.websocket.entity.CommonResp;
+import com.nextPick.websocket.dto.CommonResp;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
