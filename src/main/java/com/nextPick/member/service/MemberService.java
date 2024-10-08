@@ -9,14 +9,13 @@ import com.nextPick.member.repository.MemberRepository;
 import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.el.stream.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
-@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -39,6 +38,20 @@ public class MemberService extends ExtractMemberAndVerify {
         return extractMemberFromPrincipal(memberRepository);
     }
 
+    public Member updateMemberForAdmin(Member member,long memberId) {
+        Member findMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+
+        Optional.ofNullable(member.getStatus())
+                .ifPresent(status -> findMember.setStatus(status));
+        Optional.ofNullable(member.getGuiltyScore())
+                .ifPresent(guiltyScore -> findMember.setGuiltyScore(findMember.getGuiltyScore()+guiltyScore));
+
+        if(findMember.getGuiltyScore() >= 5){
+            findMember.setStatus(Member.memberStatus.BAN);
+        }
+        return memberRepository.save(findMember);
+    }
 
 //    public Member updateMember(MemberDto.Patch member) {
 //        Member findMember = extractMemberFromPrincipal(memberRepository);
