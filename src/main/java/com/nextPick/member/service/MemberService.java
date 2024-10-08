@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
-@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -25,6 +25,8 @@ public class MemberService extends ExtractMemberAndVerify {
     private final CustomAuthorityUtils authorityUtils;
 
     public Member createMember(Member member) {
+        memberRepository.findByEmail(member.getEmail())
+                .ifPresent(m -> { throw new BusinessLogicException(ExceptionCode.MEMBER_EXISTS);});
         String encryptedPassword = passwordEncoder.encode(member.getPassword());
         member.setPassword(encryptedPassword);
         List<String> roles = authorityUtils.createRoles(member.getEmail());
@@ -36,8 +38,24 @@ public class MemberService extends ExtractMemberAndVerify {
         return extractMemberFromPrincipal(memberRepository);
     }
 
-//    public Member updateMember(MemberDto.Patch member,Object principal) {
-//        Member findMember = extractMemberFromPrincipal(principal,memberRepository);
+    public Member updateMemberForAdmin(Member member,long memberId) {
+        Member findMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+
+        Optional.ofNullable(member.getStatus())
+                .ifPresent(status -> findMember.setStatus(status));
+        Optional.ofNullable(member.getGuiltyScore())
+                .ifPresent(guiltyScore -> findMember.setGuiltyScore(findMember.getGuiltyScore()+guiltyScore));
+
+        if(findMember.getGuiltyScore() >= 5){
+            findMember.setStatus(Member.memberStatus.BAN);
+        }
+        return memberRepository.save(findMember);
+    }
+
+//    public Member updateMember(MemberDto.Patch member) {
+//        Member findMember = extractMemberFromPrincipal(memberRepository);
+//
 //        if(!member.getNickname().isEmpty())
 //            findMember.setNickname(member.getNickname());
 //        if(!member.getOccupation().getStatus().isEmpty())
@@ -59,12 +77,12 @@ public class MemberService extends ExtractMemberAndVerify {
 
     public boolean dupCheckEmail(String email) {
         Member member = memberRepository.findByEmail(email).orElse(null);
-        return member != null;
+        return member == null;
     }
 
     public boolean dupCheckNickname(String nickname){
         Member member = memberRepository.findByNickname(nickname).orElse(null);
-        return member != null;
+        return member == null;
     }
 
 }

@@ -24,20 +24,15 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
-
 @Configuration
 public class SecurityConfiguration {
     private final JwtTokenizer jwtTokenizer;
     private final CustomAuthorityUtils authorityUtils;
-//    private final RedisTemplate<String, Object> redisTemplate;
-    private final MemberRepository memberRepository;
 
-    public SecurityConfiguration(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils, MemberRepository memberRepository) {
+    public SecurityConfiguration(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils) {
         this.jwtTokenizer = jwtTokenizer;
         this.authorityUtils = authorityUtils;
-        this.memberRepository = memberRepository;
     }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -53,17 +48,22 @@ public class SecurityConfiguration {
                 .authenticationEntryPoint(new MemberAuthenticationEntryPoint())
                 .accessDeniedHandler(new MemberAccessDeniedHandler())
                 .and()
-                .apply(new CustomFilterConfigurer())
+                .apply(new CustomFilterConfigurer())  // Jwt 필터 적용
                 .and()
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll());
+                        .antMatchers("/api/upload-audio").permitAll()  // 파일 업로드 경로 인증 필요 없음
+                        .antMatchers("/members/login", "/members/**").permitAll()  // 로그인 경로 인증 필요 없음
+                        .anyRequest().permitAll()
+                );
         return http.build();
-
     }
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
@@ -71,7 +71,7 @@ public class SecurityConfiguration {
         configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTION"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh", "Location"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -93,6 +93,4 @@ public class SecurityConfiguration {
                     .addFilterAfter(jwtVerificationFilter, JwtAuthenticationFilter.class);
         }
     }
-    }
-
-
+}

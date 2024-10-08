@@ -1,147 +1,178 @@
 package com.nextPick.questionList.service;
 
-import kr.co.shineware.nlp.komoran.constant.DEFAULT_MODEL;
-import kr.co.shineware.nlp.komoran.core.Komoran;
-import kr.co.shineware.nlp.komoran.model.KomoranResult;
-import kr.co.shineware.nlp.komoran.model.Token;
+import com.nextPick.api.openai.dto.ChatGPTRequest;
+import com.nextPick.api.openai.dto.ChatGPTResponse;
+import com.nextPick.exception.BusinessLogicException;
+import com.nextPick.exception.ExceptionCode;
+import com.nextPick.member.entity.Member;
+import com.nextPick.member.repository.MemberRepository;
+import com.nextPick.questionCategory.entity.QuestionCategory;
+import com.nextPick.questionCategory.repository.QuestionCategoryRepository;
+import com.nextPick.questionList.entity.QuestionList;
+import com.nextPick.questionList.repository.QuestionListRepository;
+import com.nextPick.solves.service.SolvesService;
+import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class QuestionListService {
+public class QuestionListService extends ExtractMemberAndVerify {
+    @Value("${openai.model}")
+    private String model;
 
-    public void komoranTestService(String s) {
-        Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
-        String strToAnalyze = "Persist는 JPA에서 엔티티를 영속성 컨텍스트에 저장하는 행위를 의미합니다. 이는 데이터베이스에 해당 엔티티가 저장된다는 것을 보장하며, 영속성 컨텍스트에서 관리되기 시작합니다.";
-        String strToAnalyze2 = "Persist는 JPA에서 영속성 컨텍스트에 엔티티를 저장하는 행위입니다. 영속성 컨텍스트에서 관리되며, 데이터베이스에 엔티티가 저장된다는 것을 보장합니다.";
-        String strToAnalyze3 = "heap은 동적으로 할당된 객체가 저장되는 영역으로, 모든 thread가 공유하며, Stack은 method 호출과 관련된 변수들이 저장되는 영역으로 각 thread마다 독립적으로 관리됩니다.";
-        List<String> keywords = new ArrayList<>();
-        keywords.add("heap은 동적으로 할당된 객체가 저장되는 영역이다.");
-        keywords.add("stack은 method 호출과 관련된 변수들이 저장되는 영역이다.");
+    @Value("${openai.api.url}")
+    private String apiURL;
 
-        List<String> NNRelated = new ArrayList<>();
+    @Autowired
+    private RestTemplate template;
 
-        List<String> splitText2 = new ArrayList<>();
-        for(String keyword : keywords){
-            StringBuilder translation = new StringBuilder();
-            KomoranResult analyzeResultList = komoran.analyze(keyword);
-            List<Token> tokenList = analyzeResultList.getTokenList();
-            boolean related = false;
-            boolean NNDouble = false;
-            for (int i = 0; i < tokenList.size(); i++){{
-                Token token = tokenList.get(i);
-                // 분석해야 하는 형태소라면은..?
-                switch (token.getPos()){
-                    case "JKS": // 가
-                    case "JKO": // 를, 은, 는
-                        if(!related) {
-                            translation.append(">");
-                            NNDouble = false;
-                        }
-                        else
-                            translation.append("/");
-                        related = !related;
-                        break;
-                    case "JC":  // 와
-                        translation.append("&");
-                        break;
-                    case "JKB": // 에서, 에, 으로
-                        if(!related) {
-                            translation.append("<");
-                            NNDouble = false;
-                        }
-                        else
-                            translation.append("/");
-                        related = !related;
-                        break;
-                    case "VV":  // 동사
-                    case "VA":  // 형용사
-                    case "NNG": // 일반 명사
-                    case "NNP": // 고유 명사
-                    case "SL":  // 외국어
-                        if(NNDouble){
-                            translation.append("/");
-                            NNDouble = false;
-                        }else{
-                            NNDouble = true;
-                        }
-                        translation.append(token.getMorph());
-                        if(related) {
-                            splitText2.add(String.valueOf(translation));
-                            translation.append("/");
-                        }
-                        break;
-                }
+    private final MemberRepository memberRepository;
+    private final QuestionListRepository questionListRepository;
+    private final QuestionCategoryRepository questionCategoryRepository;
+    private final SolvesService solvesService;
+
+    public void createQuestionList(QuestionList questionList,long questionCategoryId) {
+        QuestionCategory questionCategory = questionCategoryRepository.findById(questionCategoryId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_CATEGORY_NOT_FOUND));
+        questionListRepository.findByQuestion(questionList.getQuestion())
+                .ifPresent(p -> { throw new BusinessLogicException(ExceptionCode.QUESTION_EXISTS);});
+        questionList.setQuestionCategory(questionCategory);
+        questionListRepository.save(questionList);
+    }
+
+    public QuestionList updateQuestionList(QuestionList questionList,Long questionCategoryId,long questionListId) {
+        QuestionList findQuestionList = questionListRepository.findById(questionListId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_NOT_FOUND));
+
+        Optional.ofNullable(questionList.getQuestion())
+                .ifPresent(question -> findQuestionList.setQuestion(question));
+        Optional.ofNullable(questionList.getAnswer())
+                .ifPresent(answer -> findQuestionList.setAnswer(answer));
+        Optional.of(questionList.getCorrectCount())
+                .ifPresent(correctCount -> findQuestionList.setCorrectCount(correctCount));
+        Optional.of(questionList.getWrongCount())
+                .ifPresent(wrongCount -> findQuestionList.setWrongCount(wrongCount));
+//        Optional.of(questionList.getQuestionCategory())
+//                        .ifPresent(category -> findQuestionList.setQuestionCategory());
+
+        if(questionCategoryId != 0) {
+            QuestionCategory findquestionCategory = questionCategoryRepository.findById(questionCategoryId)
+                    .orElseThrow(() -> new BusinessLogicException(ExceptionCode.QUESTION_CATEGORY_NOT_FOUND));
+            findQuestionList.setQuestionCategory(findquestionCategory);
+        }
+        float correctRateFloat = (float) questionList.getCorrectCount() /(questionList.getWrongCount()+questionList.getCorrectCount());
+        int CorrectRate = (int)(correctRateFloat*100);
+        findQuestionList.setCorrectRate(CorrectRate);
+
+        return questionListRepository.save(findQuestionList);
+    }
+
+    public void deleteQuestionList(long questionListId){
+        QuestionList findQuestionList = questionListRepository.findById(questionListId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_NOT_FOUND));
+        questionListRepository.delete(findQuestionList);
+    }
+
+    public QuestionList findQuestionList(long questionListId){
+        return questionListRepository.findById(questionListId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_NOT_FOUND));
+    }
+
+    public Page<QuestionList> findQuestionLists(int page, int size, Long questionCategoryId,
+                                                String keyword, String sort) {
+        Sort sortBy;
+        Pageable pageable;
+        if(questionCategoryId == -1)
+            questionCategoryId = null;
+        else
+            questionCategoryRepository.findById(questionCategoryId)
+                    .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_CATEGORY_NOT_FOUND));
+//        if(keyword.equals("*"))
+//            keyword = null;
+        switch (sort) {
+            case "correct_percent_asc":
+                sortBy = Sort.by("correctRate").ascending();
+                break;
+            case "correct_percent_desc":
+                sortBy = Sort.by("correctRate").descending();
+                break;
+            case "recent":
+                sortBy = Sort.by("questionListId").descending();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid sort type: " + sort);
+        }
+        pageable = PageRequest.of(page, size, sortBy);
+        return questionListRepository.findByManyFilter(questionCategoryId,keyword,pageable);
+    }
+
+    public List<QuestionList> findQuestionLists(int size, Long questionCategoryId) {
+        return questionListRepository.findRandomQuestionsByCategory(questionCategoryId,size);
+    }
+
+    public boolean scoringInterview (long questionListId, String userResponse) {
+        Member member = extractMemberFromPrincipal(memberRepository);
+        QuestionList question = questionListRepository.findById(questionListId)
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_NOT_FOUND));
+        String prompt = "넌 이제 면접관이야 너는 문제와 해당 문제에 대한 대답을 가지고 있어.\n" +
+                "사용자 문제에 대해서 대답을 하면 정답과 비교를 해서 정답인지 아닌지 판단해주고\n" +
+                "그리고 100점만점에 몇점인지 채점도 해줘\n" +
+                "예시는 아래와 같아\n" +
+                "문제 : 안경에 대해 설명해주세요\n" +
+                "정답 : 안경은 시력 저하가 있는 사람들을 위해 시력을 보정하는 도구로, 렌즈를 사용하여 시각적 정보를 강화하거나 왜곡을 교정하는 장치입니다.\n" +
+                "사용자 대답 : 시력 저하된 사람들에게 시력을 보정해주는 도구\n" +
+                "\n" +
+                "판정 : 정답\n" +
+                "채점 : 80점\n" +
+                "\n" +
+                "이제 아래의 문제에 대한 대답을 평가해줘\n" +
+                "문제 : " + question.getQuestion() + "\n" +
+                "정답 : " + question.getAnswer() + "\n" +
+                "사용자 대답 : " + userResponse + "\n";
+        ChatGPTRequest request = new ChatGPTRequest(model, prompt);
+        ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
+        String GPTAnswer =  chatGPTResponse.getChoices().get(0).getMessage().getContent();
+        boolean result = checkAnswer(GPTAnswer,question);
+        System.out.println(GPTAnswer);
+        solvesService.createOrUpdateSolves(question,member,result,userResponse);
+        return result;
+    }
+
+    public boolean checkAnswer(String text, QuestionList question) {
+        // 각 라인을 분리
+        String[] lines = text.split("\n");
+        boolean result = false;
+
+        // "판정 :" 라인을 찾고 "정답"이 있는지 확인
+        for (String line : lines) {
+            if (line.startsWith("판정 : ") && line.contains("정답")) {
+                questionListRepository.save(question);
+                result = true;
             }
-            }
-            System.out.format("[keywords-translation] %s\n", translation);
-            System.out.println(keyword);
         }
 
-        List<String> splitText = new ArrayList<>();
-        List<String> trimAnswerText = new ArrayList<>(Arrays.asList(strToAnalyze3.split("[.?!]")));
-        for(String answerTextSingle : trimAnswerText){
-            StringBuilder translation = new StringBuilder();
-            KomoranResult analyzeResultList = komoran.analyze(answerTextSingle);
-            List<Token> tokenList = analyzeResultList.getTokenList();
-            boolean related = false;
-            boolean NNDouble = false;
-            for (int i = 0; i < tokenList.size(); i++){
-                Token token = tokenList.get(i);
-                // 분석해야 하는 형태소라면은..?
-                switch (token.getPos()){
-                    case "JKS": // 가
-                    case "JKO": // 를, 은, 는
-                        if(!related) {
-                            translation.append(">");
-                            NNDouble = false;
-                        }
-                        else
-                            translation.append("/");
-                        related = !related;
-                        break;
-                    case "JC":  // 와
-                        translation.append("&");
-                        break;
-                    case "JKB": // 에서, 에, 으로
-                        if(!related) {
-                            translation.append("<");
-                            NNDouble = false;
-                        }
-                        else
-                            translation.append("/");
-                        related = !related;
-                        break;
-                    case "VV":  // 동사
-                    case "VA":  // 형용사
-                    case "NNG": // 일반 명사
-                    case "NNP": // 고유 명사
-                    case "SL":  // 외국어
-                        if(NNDouble){
-                            translation.append("/");
-                            NNDouble = false;
-                        }else{
-                            NNDouble = true;
-                        }
-                        translation.append(token.getMorph());
-                        if(related) {
-                            splitText.add(String.valueOf(translation));
-                            translation.append("/");
-                        }
-                        break;
-                }
-//                System.out.format("[keywords] %s/%s\n", token.getMorph(), token.getPos());
-            }
-            System.out.format("[keywords-translation] %s\n", translation);
-            for(String str : splitText){
-                System.out.println("[keywords-split]" + str);
-            }
-            System.out.println(answerTextSingle);
-        }
+        if(result)
+            question.setCorrectCount(question.getCorrectCount()+1);
+        else
+            question.setWrongCount(question.getWrongCount()+1);
+
+        float correctRateFloat = (float) question.getCorrectCount() /(question.getWrongCount()+question.getCorrectCount());
+        int CorrectRate = (int)(correctRateFloat*100);
+        question.setCorrectRate(CorrectRate);
+        questionListRepository.save(question);
+        return result;
     }
 }

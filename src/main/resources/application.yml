@@ -1,0 +1,89 @@
+spring:
+  #  data:
+  #    redis:
+  #      host: 127.0.0.1
+  #      port: 6379
+  datasource:
+    url: ${AWS_RDS_URL}
+    username: ${AWS_RDS_USERNAME}
+    password: ${AWS_RDS_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql      # MySQL 데이터 파일 경로
+#      schema-locations:
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username: nextPick@gmail.com
+#    password: sqbloeerxjcuepmr
+#    properties:
+#      mail.smtp.auth: true
+#      mail.smtp.starttls.enable: true
+#      mail.smtp.starttls.required: true
+#      mail.smtp.connectiontimeout: 5000
+#      mail.smtp.timeout: 5000
+#      mail.smtp.writetimeout: 5000
+#    auth-code-expiration-millis: 600000
+openai:
+  model: gpt-4o-mini
+  api:
+    key: asd/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
+    url: https://api.openai.com/v1/chat/completions
+logging:
+  level:
+    com.google.cloud.speech: DEBUG # Google Speech API 관련 로깅
+    root: INFO
+    org.springframework.security: DEBUG # Spring Security 전체 디버그 로그
+    org:
+      springframework:
+        orm:
+          jpa: DEBUG
+mail:
+  address:
+    admin: admin@naver.com
+jwt:
+  key: asd/bGS62Cs9ZELwmdY0hu9f0q/TwYLypqvwZz832mR0wM0=
+  access-token-expiration-minutes: 6000   # 임시 6000초 flex
+  refresh-token-expiration-minutes: 1440
+
+  email:
+    super-code: "111111"
+
+
+#cloud:
+#  aws:
+#    credentials:
+#      accessKey: # 실제 IAM의 엑세스 키로 변경
+#      secretKey: # 실제 IAM의 시크릿 키로 변경
+#    region:
+#      static: ap-northeast-2  # 실제 사용하는 AWS 리전으로 변경
+#    stack:
+#      auto: false
+#    s3:
+#      enabled: true
+#      bucket:   # 실제 S3 버킷 이름으로 변경
+clova:
+  speech:
+    api:
+      url: https://clovaspeech-gw.ncloud.com/external/v1/9151/c99942b8dacb1a13da10defdca3c90f6af7f2ae292c4e6fa000041b08ece7121
+      key: asd/h61ufgwfb4
+
+ncp:
+  endpoint: https://kr.object.ncloudstorage.com
+  region: kr-standard
+  access:
+    key: asd/ncp_iam_BPAMKR4JGvvLiT8YLra9
+  secret:
+    key: asd/ncp_iam_BPKMKRZjb4Pny6y8RNr60sYb442gpaqhbm
+  bucket:
+    name: nextpick-clova-bucket

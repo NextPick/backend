@@ -7,6 +7,20 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExceptionCode {
 
+    //Reports
+    REPORTS_NOT_FOUND(404, "신고 내역을 찾을 수 없습니다."),
+    REPORTS_EXISTS(409, "신고 내역이 이미 존재합니다."),
+
+    //Solves
+    SOLVE_NOT_FOUND(404, "푼 문제를 찾을 수 없습니다."),
+
+    //questionCategory
+    QUESTION_CATEGORY_NOT_FOUND(404, "문제의 카테고리를 찾을 수 없습니다."),
+
+    //questionList
+    QUESTION_NOT_FOUND(404, "문제를 찾을 수 없습니다."),
+    QUESTION_EXISTS(409, "문제가 이미 존재합니다."),
+
     //member
     MEMBER_NOT_FOUND(404,"Member Not Found"),
     MEMBER_EXISTS(409,"Member exists"),

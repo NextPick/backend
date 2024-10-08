@@ -7,20 +7,14 @@ import com.nextPick.member.mapper.MemberMapper;
 import com.nextPick.member.service.MemberService;
 import com.nextPick.utils.UriCreator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @Validated
@@ -56,13 +50,13 @@ public class MemberController {
     /**
      * 회원가입 하는 메서드
      *
-     * @param memberDto 회원가입을 위해 받은 memberDto
+     * @param requestBody 회원가입을 위해 받은 requestBody
      *
      * @return 201 : Created  & 409 : Conflict
      */
     @PostMapping
-    public ResponseEntity createMember(@Valid @RequestBody MemberDto.Post memberDto) {
-        Member member = memberMapper.memberPostToMember(memberDto);
+    public ResponseEntity createMember(@Valid @RequestBody MemberDto.Post requestBody) {
+        Member member = memberMapper.memberPostToMember(requestBody);
         service.createMember(member);
         URI location = UriCreator.createUri(MEMBER_DEFAULT_URL, member.getMemberId());
         return ResponseEntity.created(location).build();
@@ -75,14 +69,13 @@ public class MemberController {
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
 
-//    @PatchMapping
-//    public ResponseEntity patchMember(@Valid @RequestBody MemberDto.Patch patch,
-//                                      @AuthenticationPrincipal Object principal) {
-//        patch.setEmail(principal.toString());
-//        Member member = service.updateMember(patch,principal);
-//        return new ResponseEntity<>(
-//                new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
-//    }
+    @PatchMapping("/{member-id}")
+    public ResponseEntity patchMember(@PathVariable("question-id") @Positive long memberId,
+                                      @Valid @RequestBody MemberDto.AdminPatch adminPatch) {
+        Member member = service.updateMemberForAdmin(memberMapper.memberAdminPatchDtoToMember(adminPatch),memberId);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
+    }
 
     @DeleteMapping
     public ResponseEntity deleteMember() {
@@ -99,7 +92,7 @@ public class MemberController {
 
     @PostMapping("/verify/nickname")
     public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck){
-        return service.dupCheckEmail(duplicationNicknameCheck.getNickName()) ?
+        return service.dupCheckNickname(duplicationNicknameCheck.getNickName()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
     }
