@@ -53,17 +53,7 @@ public class Board extends Auditable {
     @JsonManagedReference
     private List<BoardLike> boardLikeList = new ArrayList<>();
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public enum BoardCategory {
-        BE("백엔드"),
-        FE("프론트엔드"),
-        CS("컴퓨터 사이언스");
 
-        @Getter
-        @Setter
-        private String boardCategory;
-    }
     public void incrementViewCount() {
         this.viewCount++;
     }
