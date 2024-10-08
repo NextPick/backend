@@ -13,12 +13,11 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
-@DiscriminatorColumn
+@DiscriminatorColumn(name = "dtype")  // dtype 컬럼을 Hibernate에서 자동 생성
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Board extends Auditable {
 
@@ -29,14 +28,14 @@ public class Board extends Auditable {
     @Column(nullable = false)
     private String memberNickname;
 
-    @Column(nullable = false , length = 100)
+    @Column(nullable = false, length = 100)
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
-    private String dtype;
+    // @Column(nullable = false) -> 이 부분을 제거
+    // private String dtype;
 
     @Column(nullable = false)
     private Integer likesCount = 0;
@@ -49,10 +48,9 @@ public class Board extends Auditable {
     @JoinColumn(name = "MEMBER_ID")
     private Member member;
 
-    @OneToMany(mappedBy = "board",cascade = {CascadeType.REMOVE})
+    @OneToMany(mappedBy = "board", cascade = {CascadeType.REMOVE})
     @JsonManagedReference
     private List<BoardLike> boardLikeList = new ArrayList<>();
-
 
     public void incrementViewCount() {
         this.viewCount++;

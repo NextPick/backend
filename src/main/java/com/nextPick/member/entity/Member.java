@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.nextPick.board.entity.Board;
 import com.nextPick.boardLike.entity.BoardLike;
-
 import com.nextPick.solves.entity.Solves;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
