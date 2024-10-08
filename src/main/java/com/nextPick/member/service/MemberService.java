@@ -40,22 +40,21 @@ public class MemberService extends ExtractMemberAndVerify {
     }
 
 
-    public Member updateMember(MemberDto.Patch member) {
-        Member findMember = extractMemberFromPrincipal(memberRepository);
-
-
-        if(!member.getNickname().isEmpty())
-            findMember.setNickname(member.getNickname());
-        if(!member.getOccupation().getStatus().isEmpty())
-            findMember.setOccupation(member.getOccupation());
-        if(member.getGuiltyScore() != null)
-            findMember.setGuiltyScore(member.getGuiltyScore());
-        if(!member.getPassword().isEmpty()){
-            if(member.getConfirmPassword().isEmpty() || !member.getPassword().equals(member.getConfirmPassword()))
-                throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND);
-        }
-        return memberRepository.save(findMember);
-    }
+//    public Member updateMember(MemberDto.Patch member) {
+//        Member findMember = extractMemberFromPrincipal(memberRepository);
+//
+//        if(!member.getNickname().isEmpty())
+//            findMember.setNickname(member.getNickname());
+//        if(!member.getOccupation().getStatus().isEmpty())
+//            findMember.setOccupation(member.getOccupation());
+//        if(member.getGuiltyScore() != null)
+//            findMember.setGuiltyScore(member.getGuiltyScore());
+//        if(!member.getPassword().isEmpty()){
+//            if(member.getConfirmPassword().isEmpty() || !member.getPassword().equals(member.getConfirmPassword()))
+//                throw new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND);
+//        }
+//        return memberRepository.save(findMember);
+//    }
 
     public void deleteMember() {
         Member member = extractMemberFromPrincipal(memberRepository);
@@ -65,12 +64,12 @@ public class MemberService extends ExtractMemberAndVerify {
 
     public boolean dupCheckEmail(String email) {
         Member member = memberRepository.findByEmail(email).orElse(null);
-        return member != null;
+        return member == null;
     }
 
     public boolean dupCheckNickname(String nickname){
         Member member = memberRepository.findByNickname(nickname).orElse(null);
-        return member != null;
+        return member == null;
     }
 
 }
