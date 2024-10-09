@@ -69,7 +69,7 @@ public class MemberDto {
     @Setter
     @NoArgsConstructor
     public static class AdminPatch {
-        private Member.memberType memberType;
+        private Member.memberStatus status;
         private Integer guiltyScore;
     }
 

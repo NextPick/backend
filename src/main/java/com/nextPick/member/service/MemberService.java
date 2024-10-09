@@ -47,9 +47,11 @@ public class MemberService extends ExtractMemberAndVerify {
         Optional.ofNullable(member.getGuiltyScore())
                 .ifPresent(guiltyScore -> findMember.setGuiltyScore(findMember.getGuiltyScore()+guiltyScore));
 
-        if(findMember.getGuiltyScore() >= 5){
+        if(findMember.getGuiltyScore() >= 5)
             findMember.setStatus(Member.memberStatus.BAN);
-        }
+        else if(findMember.getGuiltyScore() < 0)
+            findMember.setGuiltyScore(0);
+
         return memberRepository.save(findMember);
     }
 
