@@ -37,6 +37,9 @@ public class Member {
     @Column(name = "password", length = 255, nullable = false)
     private String password;
 
+    @Column(name = "career")
+    private memberCareer career = memberCareer.ZEROTOONE;
+
     @Setter
     @Column(name = "nickname", length = 255, nullable = false)
     private String nickname;
@@ -128,6 +131,19 @@ public class Member {
         private final String status;
 
         memberType(String status) {
+            this.status = status;
+        }
+    }
+
+    @Getter
+    public enum memberCareer {
+        ZEROTOONE("0~1"),
+        TWOTOTHREE("2~3"),
+        FOUROROVER("4++");
+
+        private final String status;
+
+        memberCareer(String status) {
             this.status = status;
         }
     }
