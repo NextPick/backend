@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.net.URI;
 
 @RestController
@@ -49,13 +50,13 @@ public class MemberController {
     /**
      * 회원가입 하는 메서드
      *
-     * @param memberDto 회원가입을 위해 받은 memberDto
+     * @param requestBody 회원가입을 위해 받은 requestBody
      *
      * @return 201 : Created  & 409 : Conflict
      */
     @PostMapping
-    public ResponseEntity createMember(@Valid @RequestBody MemberDto.Post memberDto) {
-        Member member = memberMapper.memberPostToMember(memberDto);
+    public ResponseEntity createMember(@Valid @RequestBody MemberDto.Post requestBody) {
+        Member member = memberMapper.memberPostToMember(requestBody);
         service.createMember(member);
         URI location = UriCreator.createUri(MEMBER_DEFAULT_URL, member.getMemberId());
         return ResponseEntity.created(location).build();
@@ -68,12 +69,13 @@ public class MemberController {
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
 
-//    @PatchMapping
-//    public ResponseEntity patchMember(@Valid @RequestBody MemberDto.Patch patch) {
-//        Member member = service.updateMember(patch);
-//        return new ResponseEntity<>(
-//                new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
-//    }
+    @PatchMapping("/admin/{member-id}")
+    public ResponseEntity patchMember(@PathVariable("member-id") @Positive long memberId,
+                                      @Valid @RequestBody MemberDto.AdminPatch adminPatch) {
+        Member member = service.updateMemberForAdmin(memberMapper.memberAdminPatchDtoToMember(adminPatch),memberId);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
+    }
 
     @DeleteMapping
     public ResponseEntity deleteMember() {
@@ -90,7 +92,7 @@ public class MemberController {
 
     @PostMapping("/verify/nickname")
     public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck){
-        return service.dupCheckNickname(duplicationNicknameCheck.getNickName()) ?
+        return service.dupCheckNickname(duplicationNicknameCheck.getNickname()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
     }

@@ -6,6 +6,15 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExceptionCode {
 
+    //Feedbacks
+    INTERVIEW_NOT_FOUND(404, "면접 피드백을 찾을 수 없습니다."),
+    MENTOR_FEEDBACK_NOT_FOUND(404, "멘토 피드백을 찾을 수 없습니다."),
+    MENTOR_FEEDBACK_EXISTS(409, "멘토 피드백이 이미 존재합니다."),
+
+    //Reports
+    REPORTS_NOT_FOUND(404, "신고 내역을 찾을 수 없습니다."),
+    REPORTS_EXISTS(409, "신고 내역이 이미 존재합니다."),
+
     //Solves
     SOLVE_NOT_FOUND(404, "푼 문제를 찾을 수 없습니다."),
 
@@ -18,6 +27,7 @@ public enum ExceptionCode {
 
     //member
     MEMBER_NOT_FOUND(404,"Member Not Found"),
+    MEMBER_BANNED(403,"이용 정지 당한 사용자입니다."),
     MEMBER_EXISTS(409,"Member exists"),
     EMAIL_EXISTS(409,"Member exists"),
     NICKNAME_EXISTS(409, "NickName exists"),
