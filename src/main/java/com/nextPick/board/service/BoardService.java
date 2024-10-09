@@ -13,6 +13,8 @@ import com.nextPick.exception.ExceptionCode;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +26,7 @@ import java.util.Optional;
 @Transactional
 @RequiredArgsConstructor
 public class BoardService {
-
+    private static final Logger logger = LoggerFactory.getLogger(BoardService.class);
     private final BoardRepository boardRepository;
     private final BoardLikeRepository boardLikeRepository;
     private final MemberRepository memberRepository;
@@ -36,25 +38,29 @@ public class BoardService {
 //        return boardMapper.boardToResponse(board);
 //    }
 
-    public <T extends Board> List<BoardDto.Response> getBoardsByType(Class<T> boardType) {
-        List<Board> boards = boardRepository.findAllByBoardType(boardType);  // dtype 기반 조회
+    // 특정 게시판 유형의 게시글 조회
+    public List<BoardDto.Response> getBoardsByDtype(String dtype) {
+        logger.info("Fetching boards of type: {}", dtype);
+        List<Board> boards = boardRepository.findAllByDtype(dtype);
+        logger.info("Found {} boards of type {}", boards.size(), dtype);
         return boardMapper.boardsToResponses(boards);
     }
 
-    public List<BoardDto.Response> getBoardsByDtype(String dtype) {
-        Class<? extends Board> boardType;
-        switch (dtype) {
-            case "Q":
-                boardType = QuestionBoard.class;
-                break;
-            case "R":
-                boardType = ReviewBoard.class;
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid board type: " + dtype);
-        }
-        return getBoardsByType(boardType);
-    }
+
+//    public List<BoardDto.Response> getBoardsByDtype(String dtype) {
+//        Class<? extends Board> boardType;
+//        switch (dtype) {
+//            case "Q":
+//                boardType = QuestionBoard.class;
+//                break;
+//            case "R":
+//                boardType = ReviewBoard.class;
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Invalid board type: " + dtype);
+//        }
+//        return getBoardsByType(boardType);
+//    }
 
     @Transactional
     public void incrementViewCount(Long boardId) {

@@ -9,8 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface BoardRepository extends JpaRepository <Board, Long> {
-    @Query("SELECT b FROM Board b WHERE TYPE(b) = :boardType")
-    List<Board> findAllByBoardType(@Param("boardType") Class<? extends Board> boardType);
-
+public interface BoardRepository extends JpaRepository<Board, Long> {
+    @Query("SELECT b FROM Board b WHERE TYPE(b) = CASE WHEN :dtype = 'Q' THEN QuestionBoard WHEN :dtype = 'R' THEN ReviewBoard ELSE Board END")
+    List<Board> findAllByDtype(@Param("dtype") String dtype);
 }

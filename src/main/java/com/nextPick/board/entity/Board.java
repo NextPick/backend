@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 @Entity
 @NoArgsConstructor
-@DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING, length = 1)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Board extends Auditable {
 
@@ -39,6 +39,9 @@ public class Board extends Auditable {
 
     @Column(nullable = false)
     private Integer viewCount = 0;
+
+    @Column(name = "dtype", insertable = false, updatable = false)
+    private String dtype;
 
     @Column
     @Enumerated(value = EnumType.STRING)

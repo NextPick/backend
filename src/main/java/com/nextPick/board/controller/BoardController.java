@@ -66,21 +66,14 @@ public class BoardController {
 
     @GetMapping("/review")
     public ResponseEntity<List<BoardDto.Response>> getReviewBoards() {
-        List<BoardDto.Response> responses = boardService.getBoardsByType(ReviewBoard.class);
-        System.out.println("ReviewBoards: " + responses);  // 로그 추가
-        if (responses.isEmpty()) {
-            throw new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND);
-        }
-        return new ResponseEntity<>(responses, HttpStatus.OK);
+        List<BoardDto.Response> responses = boardService.getBoardsByDtype("R");
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/question")
     public ResponseEntity<List<BoardDto.Response>> getQuestionBoards() {
-        List<BoardDto.Response> responses = boardService.getBoardsByType(QuestionBoard.class);
-        if (responses.isEmpty()) {
-            throw new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND);
-        }
-        return new ResponseEntity<>(responses, HttpStatus.OK);
+        List<BoardDto.Response> responses = boardService.getBoardsByDtype("Q");
+        return ResponseEntity.ok(responses);
     }
 
     @DeleteMapping("/{board-id}")
