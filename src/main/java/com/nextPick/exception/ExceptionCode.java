@@ -38,6 +38,7 @@ public enum ExceptionCode {
 
     // room
     ROOM_NOT_FOUND(404, "Room Not Found"),
+    ROOM_CANT_MAKE(401, "멘티는 방을 생성할 수 없습니다."),
 
     // participant
     PARTICIPANT_NOT_FOUND(404, "Participant Not Found"),

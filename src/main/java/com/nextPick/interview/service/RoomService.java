@@ -39,6 +39,11 @@ public class RoomService extends ExtractMemberAndVerify {
     public Room createRoom(Room room) {
         // 토큰 이용하여 member 찾기
        Member member = extractMemberFromPrincipal(memberRepository);
+
+       // 멘티일 경우 방 생성 막기
+       if (member.getType() == Member.memberType.MENTEE) {
+           throw new BusinessLogicException(ExceptionCode.ROOM_CANT_MAKE);
+       }
        // 방에 member 저장
        room.setMember(member);
        // 로그로 방 uuid 보여주기

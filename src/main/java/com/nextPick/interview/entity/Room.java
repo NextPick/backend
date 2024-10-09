@@ -37,17 +37,15 @@ public class Room {
 
     @Enumerated(value = EnumType.STRING)
     @Column
-    private roomStatus status;
-
+    private roomOccupation occupation;
 
     @Getter
-    public enum roomStatus {
-        ENTRY("1~3년차"),
-        JUNIOR("4~5년차"),
-        SENIOR("5년차 이상");
+    public enum roomOccupation {
+        BE("백엔드"),
+        FE("프론트엔드");
 
-        private final String status;
+        private final String occupation;
 
-        roomStatus(String status) {this.status = status;}
+        roomOccupation(String occupation) {this.occupation = occupation;}
     }
 }
