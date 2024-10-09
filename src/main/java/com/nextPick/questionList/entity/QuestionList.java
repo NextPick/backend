@@ -3,6 +3,7 @@ package com.nextPick.questionList.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 //import com.nextPick.keyword.entity.Keyword;
+import com.nextPick.audit.Auditable;
 import com.nextPick.questionCategory.entity.QuestionCategory;
 import com.nextPick.solves.entity.Solves;
 import lombok.Getter;
@@ -16,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class QuestionList {
+public class QuestionList extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long questionListId;

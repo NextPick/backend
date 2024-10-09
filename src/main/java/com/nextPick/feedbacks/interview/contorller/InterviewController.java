@@ -30,7 +30,7 @@ public class InterviewController {
     private final InterviewMapper interviewMapper;
     private final InterviewService service;
 
-    @PostMapping("/{room-Id}/{mentee-id}")
+    @PostMapping("/{room-id}/{mentee-id}")
     public ResponseEntity createInterview(@PathVariable("room-id") @Positive long roomId,
                                           @PathVariable("mentee-id") @Positive long menteeId,
                                           @Valid @RequestBody InterviewDto.Post requestBody) {
