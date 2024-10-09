@@ -69,7 +69,7 @@ public class MemberController {
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
 
-    @PatchMapping("/{member-id}")
+    @PatchMapping("/admin/{member-id}")
     public ResponseEntity patchMember(@PathVariable("question-id") @Positive long memberId,
                                       @Valid @RequestBody MemberDto.AdminPatch adminPatch) {
         Member member = service.updateMemberForAdmin(memberMapper.memberAdminPatchDtoToMember(adminPatch),memberId);
@@ -92,7 +92,7 @@ public class MemberController {
 
     @PostMapping("/verify/nickname")
     public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck){
-        return service.dupCheckNickname(duplicationNicknameCheck.getNickName()) ?
+        return service.dupCheckNickname(duplicationNicknameCheck.getNickname()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
     }

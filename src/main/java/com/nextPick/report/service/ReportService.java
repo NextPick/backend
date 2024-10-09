@@ -45,7 +45,7 @@ public class ReportService extends ExtractMemberAndVerify {
 
     public Page<Report> getReportPage(int page, int size, String type) {
         Pageable pageable = PageRequest.of(page, size);
-        Member.memberType memberType = Member.memberType.MEMTEE;
+        Member.memberType memberType = Member.memberType.MENTEE;
         if(type.equals("mentor"))
             memberType = Member.memberType.MENTOR;
         return reportRepository.findByRespondent_Type(memberType,pageable);

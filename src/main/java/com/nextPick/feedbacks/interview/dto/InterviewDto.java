@@ -1,30 +1,17 @@
-package com.nextPick.report.dto;
+package com.nextPick.feedbacks.interview.dto;
 
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
-public class ReportDto {
+public class InterviewDto {
     @Getter
     @Setter
     @NoArgsConstructor
     public static class Post {
         @NotNull
-        private String nickname;
-
-        @NotNull
         private String content;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class Response{
-        private long reporterId;
-        private long respondentId;
-        private String content;
-        private LocalDateTime createdAt;
     }
 
     @Getter
@@ -33,10 +20,18 @@ public class ReportDto {
     @AllArgsConstructor
     @Builder
     public static class Responses{
-        private long reportId;
-        private long reporterId;
-        private long respondentId;
         private String content;
-        private LocalDateTime createdAt;
+        private String createdAt;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ResponsesForAdmin{
+        private String mentor;
+        private String content;
+        private String createdAt;
     }
 }

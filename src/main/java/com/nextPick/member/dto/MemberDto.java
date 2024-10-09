@@ -30,6 +30,9 @@ public class MemberDto {
         @NotNull(message = "직군선택은 필수 항목입니다.")
         private Member.memberOccupation occupation;
 
+        @NotNull(message = "멘토 멘티 선택은 필수 항목입니다..")
+        private Member.memberType type;
+
         @NotNull(message = "비밀번호는 필수 항목입니다.")
         @Size(min = 8, max = 15, message = "비밀번호는 8자에서 15자 사이여야 합니다.")
         @Pattern(regexp = "^[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?`~]{8,15}$",
@@ -84,8 +87,7 @@ public class MemberDto {
     @NoArgsConstructor
     public static class DuplicationNicknameCheck{
         @NotNull
-        @Email
-        private String nickName;
+        private String nickname;
     }
 
     @Getter
@@ -98,6 +100,7 @@ public class MemberDto {
         private String nickname;
         private Member.memberOccupation occupation;
         private Member.memberStatus status;
+        private Member.memberType type;
         private List<String> roles;
     }
 }
