@@ -1,28 +1,27 @@
 package com.nextPick.board.controller;
 
 import com.nextPick.board.dto.BoardDto;
-import com.nextPick.board.entity.QuestionBoard;
-import com.nextPick.board.entity.ReviewBoard;
 import com.nextPick.board.service.BoardService;
 import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
+
 @RestController
 @RequestMapping("/boards")
+@Validated
+@RequiredArgsConstructor
 public class BoardController {
 
     private final BoardService boardService;
-
-    public BoardController(BoardService boardService) {
-        this.boardService = boardService;
-    }
 
     @PostMapping
     public ResponseEntity<BoardDto.Response> createBoard(@Valid @RequestBody BoardDto.Post postDto, @RequestParam Long memberId) {

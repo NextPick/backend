@@ -24,6 +24,7 @@ public interface BoardMapper {
         }
         board.setTitle(postDto.getTitle());
         board.setContent(postDto.getContent());
+        board.setBoardStatus(Board.BoardStatus.BOARD_POST);
         if (board instanceof ReviewBoard && postDto.getBoardCategory() != null) {
             ((ReviewBoard) board).setBoardCategory(postDto.getBoardCategory());
         }
