@@ -34,4 +34,20 @@ public class Room {
 
     @Column
     private String sessionId;
+
+    @Enumerated(value = EnumType.STRING)
+    @Column
+    private roomStatus status;
+
+
+    @Getter
+    public enum roomStatus {
+        ENTRY("1~3년차"),
+        JUNIOR("4~5년차"),
+        SENIOR("5년차 이상");
+
+        private final String status;
+
+        roomStatus(String status) {this.status = status;}
+    }
 }

@@ -2,6 +2,8 @@ package com.nextPick.websocket.config;
 
 import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;
+import com.nextPick.interview.service.ParticipantService;
+import com.nextPick.member.service.MemberService;
 import com.nextPick.websocket.dto.CommonResp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +11,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.RequestContextFilter;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
@@ -33,37 +33,43 @@ public class WebSocketEventListener {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private ParticipantService participantService;
+
     @EventListener
     public void handleWebsocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
 
         Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
-        String roomId = nativeHeaders.get("roomId").get(0);
+        // 룸 uuid로 변경 예정
+        String roomUuid = nativeHeaders.get("roomUuid").get(0);
         String camKey = nativeHeaders.get("camKey").get(0);
 
         // member_type이 멘토인지 확인 아니면 에러
 
-
         //전역 함수에서 checkRoomId map을 가져와, 해당 세션 Id에 대한 룸 Id 가 있는지 확인
         if(!globalVariables.getCheckRoomId().containsKey(sessionId)){
             //없다는 추가 해준다.
-            globalVariables.getCheckRoomId().put(sessionId, roomId);
+            globalVariables.getCheckRoomId().put(sessionId, roomUuid);
         }
 
         //전역 함수에서 checkRoomIdCount map 를 가져와, 해당 룸 Id에 대한 유저수가 있는지 확인
-        if(globalVariables.getCheckRoomIdCount().containsKey(roomId)) {
+        if(globalVariables.getCheckRoomIdCount().containsKey(roomUuid)) {
             // 만약 룸 인원이 4명일 경우 못 들어오게 막기
-            if (globalVariables.getCheckRoomIdCount().size() >= 4) {
+            if (participantService.findParticipantCount(roomUuid) >= 4) {
                 throw new BusinessLogicException(ExceptionCode.PARTICIPANT_FULL);
             } else {
                 //4명 이하라면 유저수를 +1 해준다.
-                globalVariables.getCheckRoomIdCount().put(roomId, globalVariables.getCheckRoomIdCount().get(roomId) + 1);
+                globalVariables.getCheckRoomIdCount().put(roomUuid, globalVariables.getCheckRoomIdCount().get(roomUuid) + 1);
             }
         }
         else{
             //아니면 1로 추가해준다.
-            globalVariables.getCheckRoomIdCount().put(roomId, 1);
+            globalVariables.getCheckRoomIdCount().put(roomUuid, 1);
         }
 
         //전역 함수에서 checkCamKey map 를 가져와, 해당 세션 Id에 대한 camKey가 있는지 확인
@@ -72,11 +78,11 @@ public class WebSocketEventListener {
             globalVariables.getCheckCamKey().put(sessionId, camKey);
         }
 
-        messagingTemplate.convertAndSend("/topic/roomId/" + sessionId, roomId);
+        messagingTemplate.convertAndSend("/topic/roomUuid/" + sessionId, roomUuid);
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
-                + "룸 ID : " + roomId + "\n"
-                + "룸 인원 : " + globalVariables.getCheckRoomIdCount().get(roomId));
+                + "룸 UUID : " + roomUuid + "\n"
+                + "룸 인원 : " + globalVariables.getCheckRoomIdCount().get(roomUuid));
     }
 
     @EventListener

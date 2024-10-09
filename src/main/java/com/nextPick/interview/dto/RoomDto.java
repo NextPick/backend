@@ -8,6 +8,7 @@ public class RoomDto {
     @Getter
     public static class Post {
         private String title;
+
     }
 
     @Getter
