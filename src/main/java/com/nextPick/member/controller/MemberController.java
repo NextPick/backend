@@ -92,7 +92,7 @@ public class MemberController {
 
     @PostMapping("/verify/nickname")
     public ResponseEntity nicknameDuplicationVerify(@Valid @RequestBody MemberDto.DuplicationNicknameCheck duplicationNicknameCheck){
-        return service.dupCheckNickname(duplicationNicknameCheck.getNickName()) ?
+        return service.dupCheckNickname(duplicationNicknameCheck.getNickname()) ?
                 new ResponseEntity<>(HttpStatus.OK) :
                 new ResponseEntity<>(HttpStatus.CONFLICT);
     }
