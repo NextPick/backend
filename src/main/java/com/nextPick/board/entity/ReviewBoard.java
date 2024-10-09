@@ -11,7 +11,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("R")  // 리뷰 게시판
+@DiscriminatorValue("R")
 @Getter
 @Setter
 public class ReviewBoard extends Board {

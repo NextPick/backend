@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 @Entity
 @NoArgsConstructor
-@DiscriminatorColumn(name = "dtype")  // dtype 컬럼을 Hibernate에서 자동 생성
+@DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Board extends Auditable {
 
@@ -34,14 +34,25 @@ public class Board extends Auditable {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    // @Column(nullable = false) -> 이 부분을 제거
-    // private String dtype;
-
     @Column(nullable = false)
     private Integer likesCount = 0;
 
     @Column(nullable = false)
     private Integer viewCount = 0;
+
+    @Column
+    @Enumerated(value = EnumType.STRING)
+    private BoardStatus boardStatus = BoardStatus.BOARD_POST;
+
+    @AllArgsConstructor
+    public enum BoardStatus{
+        BOARD_POST("게시글 게시 상태"),
+        BOARD_DELETED("게시글 삭제 상태");
+
+        @Getter
+        @Setter
+        private String statusDescription;
+    }
 
     @JsonBackReference
     @ManyToOne
