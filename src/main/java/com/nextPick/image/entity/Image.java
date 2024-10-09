@@ -16,7 +16,7 @@ public class Image {
     private Long imageId;
 
     @Column(nullable = false)
-    private Long postId;
+    private Long boardId;
 
     @Column(nullable = false)
     private String uploadFileName;

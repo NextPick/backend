@@ -28,8 +28,11 @@ public enum ExceptionCode {
 
     //Board 관련
     BOARD_NOT_FOUND(404, "게시글을 찾을 수 없습니다."),
-    INVALID_BOARD_REQUEST(400, "잘못된 게시글 요청입니다.");
+    INVALID_BOARD_REQUEST(400, "잘못된 게시글 요청입니다."),
 
+    //Comment 관련
+    COMMENT_NOT_FOUND(404, "댓글을 찾을 수 없습니다."),
+    UNAUTHORIZED_ACTION(403, "권한이 없습니다.");
     @Getter
     private int statusCode;
 
