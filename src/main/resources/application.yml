@@ -75,17 +75,3 @@ jwt:
 #    s3:
 #      enabled: true
 #      bucket:   # 실제 S3 버킷 이름으로 변경
-clova:
-  speech:
-    api:
-      url: https://clovaspeech-gw.ncloud.com/external/v1/9151/c99942b8dacb1a13da10defdca3c90f6af7f2ae292c4e6fa000041b08ece7121
-      key: ${CLOVA_KEY}
-ncp:
-  endpoint: https://kr.object.ncloudstorage.com
-  region: kr-standard
-  access:
-    key: ${NCP_ACCESS_KEY}
-  secret:
-    key: {NCP_SECRET_KEY}
-  bucket:
-    name: nextpick-clova-bucket
