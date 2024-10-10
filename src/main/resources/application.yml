@@ -53,7 +53,7 @@ logging:
           jpa: DEBUG
 mail:
   address:
-    admin: ${MAIL_ADMIN}
+    admin: admin@naver.com
 jwt:
   key: ${JWT_KEY}
   access-token-expiration-minutes: 6000   # 임시 6000초 flex
