@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 @Getter
@@ -40,6 +41,7 @@ public class Board extends Auditable {
     @Column(nullable = false)
     private Integer viewCount = 0;
 
+    @NotNull
     @Column
     @Enumerated(value = EnumType.STRING)
     private BoardStatus boardStatus = BoardStatus.BOARD_POST;

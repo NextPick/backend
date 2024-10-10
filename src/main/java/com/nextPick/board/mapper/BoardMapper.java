@@ -13,23 +13,16 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface BoardMapper {
 
-    default Board postDtoToBoard(BoardDto.Post postDto) {
-        Board board;
-        if ("ReviewBoard".equals(postDto.getDtype())) {
-            board = new ReviewBoard();
-        } else if ("QuestionBoard".equals(postDto.getDtype())) {
-            board = new QuestionBoard();
-        } else {
-            throw new IllegalArgumentException("Invalid board type: " + postDto.getDtype());
-        }
+    default void postDtoToBoard(BoardDto.Post postDto, Board board) {
         board.setTitle(postDto.getTitle());
         board.setContent(postDto.getContent());
         board.setBoardStatus(Board.BoardStatus.BOARD_POST);
+
         if (board instanceof ReviewBoard && postDto.getBoardCategory() != null) {
             ((ReviewBoard) board).setBoardCategory(postDto.getBoardCategory());
         }
-        return board;
     }
+
 
     default void patchDtoToBoard(BoardDto.Patch patchDto, Board board) {
         board.setTitle(patchDto.getTitle());
@@ -45,6 +38,7 @@ public interface BoardMapper {
                 .dtype(board.getClass().getSimpleName())
                 .likesCount(board.getLikesCount())
                 .viewCount(board.getViewCount())
+                .boardStatus(board.getBoardStatus().getStatusDescription())
                 .build();
     }
     default List<BoardDto.Response> boardsToResponses(List<Board> boards) {

@@ -35,11 +35,11 @@ public enum ExceptionCode {
     //토큰 인증 관련
     UNAUTHORIZED_MEMBER(401, "토큰 인증에 실패했습니다."),
     TOKEN_INVALID(403, "토큰값이 유효하지 않습니다."),
-
+    INVALID_BOARD_TYPE (403 , "잘못된 게시판 입니다"),
     //Board 관련
     BOARD_NOT_FOUND(404, "게시글을 찾을 수 없습니다."),
     INVALID_BOARD_REQUEST(400, "잘못된 게시글 요청입니다."),
-
+    BOARD_DELETED(404,"게시물이 삭제된 상태입니다."),
     //Comment 관련
     COMMENT_NOT_FOUND(404, "댓글을 찾을 수 없습니다."),
     UNAUTHORIZED_ACTION(403, "권한이 없습니다."),

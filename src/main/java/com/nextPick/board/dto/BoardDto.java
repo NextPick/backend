@@ -26,9 +26,6 @@ public class BoardDto {
 
         private String contentImg;
 
-        @NotNull(message = "dtype은 필수입니다.")
-        private String dtype;
-
         private ReviewBoard.BoardCategory boardCategory;
 
     }

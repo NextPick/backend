@@ -23,9 +23,10 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    @PostMapping
-    public ResponseEntity<BoardDto.Response> createBoard(@Valid @RequestBody BoardDto.Post postDto) {
-        BoardDto.Response response = boardService.createBoard(postDto);
+    @PostMapping("/{dtype}")
+    public ResponseEntity<BoardDto.Response> createBoard(@PathVariable String dtype,
+                                                         @Valid @RequestBody BoardDto.Post postDto) {
+        BoardDto.Response response = boardService.createBoard(postDto, dtype);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -35,8 +36,8 @@ public class BoardController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/{boardId}/like")
-    public ResponseEntity<Void> toggleLike(@PathVariable Long boardId) {
+    @PostMapping("/{boardId}/likes")
+    public ResponseEntity<Void> toggleLike(@PathVariable Long boardId ) {
         boardService.toggleLike(boardId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -47,11 +48,27 @@ public class BoardController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+
     @DeleteMapping("/{boardId}")
     public ResponseEntity<Void> deleteBoard(@PathVariable long boardId) {
         boardService.deleteBoard(boardId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/R")
+    public ResponseEntity<List<BoardDto.Response>> getReviewBoards() {
+        List<BoardDto.Response> responses = boardService.getBoardsByDtype("R");
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/Q")
+    public ResponseEntity<List<BoardDto.Response>> getQuestionBoards() {
+        List<BoardDto.Response> responses = boardService.getBoardsByDtype("Q");
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+
 }
 
 
