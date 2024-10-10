@@ -4,6 +4,7 @@ import com.nextPick.board.entity.ReviewBoard;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -24,6 +25,9 @@ public class BoardDto {
         private String content;
 
         private String contentImg;
+
+        @NotNull(message = "dtype은 필수입니다.")
+        private String dtype;
 
         private ReviewBoard.BoardCategory boardCategory;
 
@@ -57,11 +61,11 @@ public class BoardDto {
         private String title;
         private String author;
         private String content;
-        private String contentImg;  // 이미지 경로
-        private String boardType;
-        private String boardStatus;  // 게시글 상태
-        private int likesCount;  // 좋아요 수
-        private int viewCount;   // 조회수
+        private String contentImg;
+        private String dtype;
+        private String boardStatus;
+        private int likesCount;
+        private int viewCount;
     }
 
     @Getter
@@ -73,11 +77,11 @@ public class BoardDto {
         private String title;
         private String author;
         private String content;
-        private String contentImg;  // 이미지 경로
+        private String contentImg;
 //        private List<CommentDto.Response> comments;  // 댓글 리스트
-        private String boardType;
-        private String boardStatus;  // 게시글 상태
-        private int likesCount;  // 좋아요 수
-        private int viewCount;   // 조회수
+        private String dtype;
+        private String boardStatus;
+        private int likesCount;
+        private int viewCount;
     }
 }
