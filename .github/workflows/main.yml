@@ -60,6 +60,12 @@ jobs:
           -e AWS_RDS_URL=${{ secrets.AWS_RDS_URL }} \\
           -e AWS_RDS_USERNAME=${{ secrets.DATASOURCE_USERNAME }} \\
           -e AWS_RDS_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }} \\
+          -e MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \\
+          -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \\
+          -e OPENAPI_KEY=${{ secrets.OPENAPI_KEY }} \\
+          -e OPENAPI_URL=${{ secrets.OPENAPI_URL }} \\
+          -e JWT_KEY=${{ secrets.JWT_KEY }} \\
+          -e EMAIL_SUPER_CODE=${{ secrets.EMAIL_SUPER_CODE }} \\
           next-pick'
             ]" \
             --output text
