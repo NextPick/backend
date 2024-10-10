@@ -23,4 +23,10 @@ public class Participant {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ROOM_ID")
     private Room room;
+
+    @Column
+    private String sessionId;
+
+    @Column
+    private String camKey;
 }

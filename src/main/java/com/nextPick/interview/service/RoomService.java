@@ -29,13 +29,14 @@ public class RoomService extends ExtractMemberAndVerify {
     private final ParticipantRepository participantRepository;
     private final ParticipantService participantService;
 
-    public RoomService(RoomRepository roomRepository, MemberRepository memberRepository, ParticipantRepository participantRepository, @Lazy ParticipantService participantService) {
+    public RoomService(RoomRepository roomRepository, MemberRepository memberRepository, ParticipantRepository participantRepository, ParticipantService participantService) {
         this.roomRepository = roomRepository;
         this.memberRepository = memberRepository;
         this.participantRepository = participantRepository;
         this.participantService = participantService;
     }
 
+    @Transactional
     public Room createRoom(Room room) {
         // 토큰 이용하여 member 찾기
        Member member = extractMemberFromPrincipal(memberRepository);
@@ -60,12 +61,13 @@ public class RoomService extends ExtractMemberAndVerify {
        return savedRoom;
     }
 
+    @Transactional
     public int findRoomsCount() {
         // 전체 방 찾기
         List<Room> rooms = roomRepository.findAll();
         // 들어갈 수 있는 방
         int canEnterRoomCount = 0;
-        // 방 하나씩 참가자 4명이하 방 찾기
+        // 방 하나씩 참가자 4명이하 방 개수 찾기
         for (Room room : rooms) {
             int participantCount = participantService.findParticipantCount(room.getUuid());
             if (participantCount < 4) {
@@ -76,6 +78,21 @@ public class RoomService extends ExtractMemberAndVerify {
         return canEnterRoomCount;
     }
 
+    @Transactional
+    public Room findActiveRoom(String occupation) {
+        List<Room> rooms = roomRepository.findAll();
+
+        for (Room room : rooms) {
+            // 방의 인원수가 4명 이하이고 룸 직군이 받은 것과 같을 때 return
+            if (room.getParticipants().size() < 4 && room.getOccupation().toString().equals(occupation)) {
+                return room;
+            }
+        }
+
+        throw new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND);
+    }
+
+    @Transactional
     public void deleteRoom(String uuid) {
         Room room = findRoomByUuid(uuid);
         List<Participant> participantList = participantRepository.findAllByRoomUuid(room.getUuid());
@@ -83,6 +100,7 @@ public class RoomService extends ExtractMemberAndVerify {
         roomRepository.delete(room);
     }
 
+    @Transactional(readOnly = true)
     public Room findRoomByUuid(String uuid) {
         Optional<Room> optionalRoom = roomRepository.findByUuid(uuid);
         return optionalRoom.orElseThrow(() ->

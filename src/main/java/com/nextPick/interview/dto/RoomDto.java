@@ -9,7 +9,7 @@ public class RoomDto {
     @Getter
     public static class Post {
         private String title;
-        private Room.roomOccupation Occupation;
+        private Room.roomOccupation occupation;
     }
 
     @Getter

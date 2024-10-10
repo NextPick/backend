@@ -85,4 +85,10 @@ public class MemberService extends ExtractMemberAndVerify {
         return member == null;
     }
 
+    public Member findMemberByEmail(String email) {
+        Optional<Member> member = memberRepository.findByEmail(email);
+        return member.orElseThrow(() ->
+                new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
+
 }

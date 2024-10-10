@@ -29,7 +29,7 @@ public class Room {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "room")
+    @OneToMany(mappedBy = "room")
     private List<Participant> participants;
 
     @Column

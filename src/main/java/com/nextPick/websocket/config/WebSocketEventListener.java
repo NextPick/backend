@@ -2,8 +2,16 @@ package com.nextPick.websocket.config;
 
 import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;
+import com.nextPick.interview.entity.Participant;
+import com.nextPick.interview.entity.Room;
+import com.nextPick.interview.repository.ParticipantRepository;
+import com.nextPick.interview.repository.RoomRepository;
 import com.nextPick.interview.service.ParticipantService;
+import com.nextPick.interview.service.RoomService;
+import com.nextPick.member.entity.Member;
 import com.nextPick.member.service.MemberService;
+import com.nextPick.utils.ExtractMemberAndVerify;
+import com.nextPick.utils.JwtUtil;
 import com.nextPick.websocket.dto.CommonResp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +33,7 @@ import java.util.Objects;
 
 @Slf4j
 @Component
-public class WebSocketEventListener {
-
+public class WebSocketEventListener extends ExtractMemberAndVerify {
     @Autowired
     private GlobalVariables globalVariables;
 
@@ -39,50 +46,52 @@ public class WebSocketEventListener {
     @Autowired
     private ParticipantService participantService;
 
+    @Autowired
+    private RoomService roomService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private RoomRepository roomRepository;
+
+    @Autowired
+    private ParticipantRepository participantRepository;
+
     @EventListener
     public void handleWebsocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = headerAccessor.getSessionId();
 
         Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
-        // 룸 uuid로 변경 예정
-        String roomUuid = nativeHeaders.get("roomUuid").get(0);
+
         String camKey = nativeHeaders.get("camKey").get(0);
+        String occupation = nativeHeaders.get("occupation").get(0);
+        String email = nativeHeaders.get("email").get(0);
 
-        //
+        Member member = memberService.findMemberByEmail(email);
 
-        //전역 함수에서 checkRoomId map을 가져와, 해당 세션 Id에 대한 룸 Id 가 있는지 확인
-        if(!globalVariables.getCheckRoomId().containsKey(sessionId)){
-            //없다는 추가 해준다.
-            globalVariables.getCheckRoomId().put(sessionId, roomUuid);
+        // 직군으로 분류하여 사람이 꽉 차있지 않은 방을 찾기
+        Room room = roomService.findActiveRoom(occupation);
+        String roomUUid = room.getUuid();
+
+        // 해당 세션 Id에 대한 룸 Id 가 있는지 확인
+        if(room.getSessionId() == null) {
+            //없다면 추가 해준다.
+            room.setSessionId(sessionId);
         }
 
-        //전역 함수에서 checkRoomIdCount map 를 가져와, 해당 룸 Id에 대한 유저수가 있는지 확인
-        if(globalVariables.getCheckRoomIdCount().containsKey(roomUuid)) {
-            // 만약 룸 인원이 4명일 경우 못 들어오게 막기
-            if (participantService.findParticipantCount(roomUuid) >= 4) {
-                throw new BusinessLogicException(ExceptionCode.PARTICIPANT_FULL);
-            } else {
-                //4명 이하라면 유저수를 +1 해준다.
-                globalVariables.getCheckRoomIdCount().put(roomUuid, globalVariables.getCheckRoomIdCount().get(roomUuid) + 1);
-            }
-        }
-        else{
-            //아니면 1로 추가해준다.
-            globalVariables.getCheckRoomIdCount().put(roomUuid, 1);
-        }
+        participantService.createParticipant(room, member, sessionId, camKey);
 
-        //전역 함수에서 checkCamKey map 를 가져와, 해당 세션 Id에 대한 camKey가 있는지 확인
-        if(!globalVariables.getCheckCamKey().containsKey(sessionId)){
-            //없다면 추가해준다.
-            globalVariables.getCheckCamKey().put(sessionId, camKey);
-        }
+        room = roomRepository.save(room);
 
-        messagingTemplate.convertAndSend("/topic/roomUuid/" + sessionId, roomUuid);
+        int participantCount = participantService.findParticipantCount(room.getUuid());
+
+        messagingTemplate.convertAndSend("/topic/roomUuid/" + sessionId, roomUUid);
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
-                + "룸 UUID : " + roomUuid + "\n"
-                + "룸 인원 : " + globalVariables.getCheckRoomIdCount().get(roomUuid));
+                + "룸 UUID : " + roomUUid + "\n"
+                + "룸 인원 : " + participantCount);
     }
 
     @EventListener
