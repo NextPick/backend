@@ -22,7 +22,7 @@ public interface BoardMapper {
             ((ReviewBoard) board).setBoardCategory(postDto.getBoardCategory());
         }
     }
-
+    BoardDto.ResponseBoard boardToResponseBoard(Board board);
 
     default void patchDtoToBoard(BoardDto.Patch patchDto, Board board) {
         board.setTitle(patchDto.getTitle());
@@ -30,7 +30,8 @@ public interface BoardMapper {
     }
 
     default BoardDto.Response boardToResponse(Board board) {
-        return BoardDto.Response.builder()
+        // 빌더 호출은 Response.builder()로 합니다.
+        BoardDto.Response.ResponseBuilder responseBuilder = BoardDto.Response.builder()
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
                 .author(board.getMemberNickname())
@@ -38,9 +39,20 @@ public interface BoardMapper {
                 .dtype(board.getClass().getSimpleName())
                 .likesCount(board.getLikesCount())
                 .viewCount(board.getViewCount())
-                .boardStatus(board.getBoardStatus().getStatusDescription())
-                .build();
+                .boardStatus(board.getBoardStatus().getStatusDescription());
+
+        // ReviewBoard일 경우에만 BoardCategory 추가
+        if (board instanceof ReviewBoard) {
+            ReviewBoard reviewBoard = (ReviewBoard) board;
+            responseBuilder.boardCategory(reviewBoard.getBoardCategory());
+        }
+
+        return responseBuilder.build();
     }
+
+
+
+
     default List<BoardDto.Response> boardsToResponses(List<Board> boards) {
         return boards.stream()
                 .map(this::boardToResponse)

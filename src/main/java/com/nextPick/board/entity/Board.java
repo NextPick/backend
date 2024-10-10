@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 @Entity
 @NoArgsConstructor
-@DiscriminatorColumn( discriminatorType = DiscriminatorType.STRING, length = 1)
+@DiscriminatorColumn( name = "dtype" , discriminatorType = DiscriminatorType.STRING, length = 1)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Board extends Auditable {
 

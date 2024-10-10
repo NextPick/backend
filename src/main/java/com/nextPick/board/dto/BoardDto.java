@@ -63,6 +63,8 @@ public class BoardDto {
         private String boardStatus;
         private int likesCount;
         private int viewCount;
+        private int commentCount;
+        private ReviewBoard.BoardCategory boardCategory;
     }
 
     @Getter
@@ -75,10 +77,11 @@ public class BoardDto {
         private String author;
         private String content;
         private String contentImg;
-//        private List<CommentDto.Response> comments;  // 댓글 리스트
+//        private List<CommentDto.Response> comments;
         private String dtype;
         private String boardStatus;
         private int likesCount;
         private int viewCount;
+        private int commentCount;
     }
 }

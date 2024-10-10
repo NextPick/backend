@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,12 +38,18 @@ public class BoardService extends ExtractMemberAndVerify {
     private final BoardMapper boardMapper;
 
 
-    public List<BoardDto.Response> getBoardsByDtype(String dtype) {
+
+
+    public Page<BoardDto.Response> getBoardsByDtype(String dtype, Pageable pageable) {
         logger.info("Fetching boards of type: {}", dtype);
-        List<Board> boards = boardRepository.findAllByDtype(dtype);
-        logger.info("Found {} boards of type {}", boards.size(), dtype);
-        return boardMapper.boardsToResponses(boards);
+        Page<Board> boardPage = boardRepository.findAllByDtype(dtype, pageable);
+        logger.info("Found {} boards of type {}", boardPage.getTotalElements(), dtype);
+
+        return boardPage.map(boardMapper::boardToResponse);
     }
+
+
+
 
 
     // 게시글 생성
@@ -54,29 +62,27 @@ public class BoardService extends ExtractMemberAndVerify {
 //        return boardMapper.boardToResponse(savedBoard);
 //    }
 
-
     public BoardDto.Response createBoard(BoardDto.Post postDto, String dtype) {
-        Member member = extractMemberFromPrincipal(memberRepository);
-
-        // dtype에 따라 QuestionBoard 또는 ReviewBoard로 변환
         Board board;
-        if ("Q".equals(dtype)) {
-            board = new QuestionBoard();  // 여기서 직접 객체 생성
-        } else if ("R".equals(dtype)) {
-            board = new ReviewBoard();  // 여기서 직접 객체 생성
+        if ("R".equals(dtype)) {
+            ReviewBoard reviewBoard = new ReviewBoard();
+            reviewBoard.setBoardCategory(postDto.getBoardCategory());
+            reviewBoard.setTitle(postDto.getTitle());
+            reviewBoard.setContent(postDto.getContent());
+            board = reviewBoard;
+        } else if ("Q".equals(dtype)) {
+            QuestionBoard questionBoard = new QuestionBoard();
+            questionBoard.setTitle(postDto.getTitle());
+            questionBoard.setContent(postDto.getContent());
+            board = questionBoard;
         } else {
             throw new BusinessLogicException(ExceptionCode.INVALID_BOARD_TYPE);
         }
 
-        // postDto를 이용해 board 객체에 값 매핑
-        boardMapper.postDtoToBoard(postDto, board);
-        board.setMember(member);
-        board.setMemberNickname(member.getNickname());
-
-
-        Board savedBoard = boardRepository.save(board);
-        return boardMapper.boardToResponse(savedBoard);
+        boardRepository.save(board);
+        return boardMapper.boardToResponse(board);
     }
+
 
 
 
@@ -150,4 +156,9 @@ public class BoardService extends ExtractMemberAndVerify {
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED_MEMBER);
         }
     }
+
+
+
+
+
 }

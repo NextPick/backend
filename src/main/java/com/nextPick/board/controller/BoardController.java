@@ -7,6 +7,9 @@ import com.nextPick.exception.ExceptionCode;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -55,18 +58,37 @@ public class BoardController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/R")
-    public ResponseEntity<List<BoardDto.Response>> getReviewBoards() {
-        List<BoardDto.Response> responses = boardService.getBoardsByDtype("R");
-        return new ResponseEntity<>(responses, HttpStatus.OK);
-    }
 
+    @GetMapping("/R")
+    public ResponseEntity<?> getReviewBoards(
+            @Positive @RequestParam int page,
+            @Positive @RequestParam int size) {
+        try {
+            Pageable pageable = PageRequest.of(page - 1, size);  // 페이지는 0부터 시작하므로 page - 1
+            Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("R", pageable);
+
+            List<BoardDto.Response> responses = boardPage.getContent();  // 페이징된 게시글 목록
+            return new ResponseEntity<>(responses, HttpStatus.OK);  // 응답 반환
+        } catch (Exception e) {
+            // 예외 로그를 출력
+            e.printStackTrace();
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);  // 에러 메시지 반환
+        }
+    }
 
     @GetMapping("/Q")
-    public ResponseEntity<List<BoardDto.Response>> getQuestionBoards() {
-        List<BoardDto.Response> responses = boardService.getBoardsByDtype("Q");
-        return new ResponseEntity<>(responses, HttpStatus.OK);
+    public ResponseEntity<List<BoardDto.Response>> getQuestionBoards(
+            @Positive @RequestParam int page,
+            @Positive @RequestParam int size) {
+
+        Pageable pageable = PageRequest.of(page - 1, size);  // 페이지는 0부터 시작하므로 page - 1
+        Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("Q", pageable);
+
+        List<BoardDto.Response> responses = boardPage.getContent();  // 페이징된 게시글 목록
+        return new ResponseEntity<>(responses, HttpStatus.OK);  // 응답 반환
     }
+
+
 
 
 }
