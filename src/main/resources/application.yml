@@ -40,8 +40,8 @@ spring:
 openai:
   model: gpt-4o-mini
   api:
-    key: ${OPENAPI_KEY}
-    url: ${OPENAPI_URL}
+    key: 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
+    url: https://api.openai.com/v1/chat/completions
 logging:
   level:
     com.google.cloud.speech: DEBUG # Google Speech API 관련 로깅
