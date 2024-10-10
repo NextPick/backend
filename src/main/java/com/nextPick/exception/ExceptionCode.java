@@ -42,7 +42,11 @@ public enum ExceptionCode {
 
     //Comment 관련
     COMMENT_NOT_FOUND(404, "댓글을 찾을 수 없습니다."),
-    UNAUTHORIZED_ACTION(403, "권한이 없습니다.");
+    UNAUTHORIZED_ACTION(403, "권한이 없습니다."),
+
+    //mail 관련
+    INVALID_REPORT_TARGET(400, "Report target is invalid");
+
     @Getter
     private int statusCode;
 

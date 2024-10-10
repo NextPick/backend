@@ -38,7 +38,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Start Session Manager session
-        run: aws ssm start-session --target i-060f949b84e77e10a
+        run: aws ssm start-session --target i-07b42ce97984eb21f
 
       - name: Deploy to Server
         env:
@@ -47,7 +47,7 @@ jobs:
           AWS_REGION: ap-northeast-2
         run: |
           aws ssm send-command \
-            --instance-ids i-060f949b84e77e10a \
+            --instance-ids i-07b42ce97984eb21f \
             --document-name "AWS-RunShellScript" \
             --parameters "commands=[
               'if sudo docker ps -a --format \\'{{.Names}}\\' | grep -q \\'^server$\\'; then',
