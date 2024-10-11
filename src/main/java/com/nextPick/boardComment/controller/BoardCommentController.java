@@ -14,7 +14,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/boards/{board-id}/comments")  // post -> board로 변경
+@RequestMapping("/boards/{board-id}/comments")
 public class BoardCommentController {
 
     private final BoardCommentService boardCommentService;
@@ -29,15 +29,16 @@ public class BoardCommentController {
     public ResponseEntity<Void> createComment(@PathVariable("board-id") Long boardId,
                                               @Valid @RequestBody BoardCommentDto.Post requestBody) {
         BoardComment boardComment = mapper.boardCommentPostDtoToBoardComment(requestBody);
-        boardCommentService.createBoardComment(boardComment, boardId, requestBody.getMemberId());
+        boardCommentService.createBoardComment(boardComment, boardId);
         URI location = UriCreator.createUri("/boards/" + boardId + "/comments", boardComment.getBoardCommentId());
         return ResponseEntity.created(location).build();
     }
 
+    @PatchMapping("/{comment-id}")
     public ResponseEntity<SingleResponseDto<BoardCommentDto.Response>> updateComment(
             @PathVariable("comment-id") Long commentId,
             @Valid @RequestBody BoardCommentDto.Patch requestBody) {
-        BoardComment updatedComment = boardCommentService.updateBoardComment(commentId, mapper.boardCommentPatchDtoToBoardComment(requestBody), requestBody.getMemberId());
+        BoardComment updatedComment = boardCommentService.updateBoardComment(commentId, mapper.boardCommentPatchDtoToBoardComment(requestBody));
         return ResponseEntity.ok(new SingleResponseDto<>(mapper.boardCommentToBoardCommentResponseDto(updatedComment)));
     }
 
@@ -48,9 +49,8 @@ public class BoardCommentController {
     }
 
     @DeleteMapping("/{comment-id}")
-    public ResponseEntity<Void> deleteComment(@PathVariable("comment-id") Long commentId,
-                                              @RequestParam("memberId") Long memberId) {
-        boardCommentService.deleteBoardComment(commentId, memberId);
+    public ResponseEntity<Void> deleteComment(@PathVariable("comment-id") Long commentId) {
+        boardCommentService.deleteBoardComment(commentId);
         return ResponseEntity.noContent().build();
     }
 }

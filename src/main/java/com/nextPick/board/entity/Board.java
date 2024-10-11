@@ -3,6 +3,7 @@ package com.nextPick.board.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.nextPick.audit.Auditable;
+import com.nextPick.boardComment.entity.BoardComment;
 import com.nextPick.boardLike.entity.BoardLike;
 import com.nextPick.member.entity.Member;
 import lombok.AllArgsConstructor;
@@ -11,13 +12,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
-@DiscriminatorColumn( discriminatorType = DiscriminatorType.STRING, length = 1)
+@DiscriminatorColumn( name = "dtype" , discriminatorType = DiscriminatorType.STRING, length = 1)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Board extends Auditable {
 
@@ -40,6 +42,9 @@ public class Board extends Auditable {
     @Column(nullable = false)
     private Integer viewCount = 0;
 
+
+
+    @NotNull
     @Column
     @Enumerated(value = EnumType.STRING)
     private BoardStatus boardStatus = BoardStatus.BOARD_POST;
@@ -53,6 +58,10 @@ public class Board extends Auditable {
         @Setter
         private String statusDescription;
     }
+    @JsonManagedReference
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardComment> comments = new ArrayList<>();
+
 
     @JsonBackReference
     @ManyToOne

@@ -9,6 +9,7 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @DiscriminatorValue("R")
@@ -21,6 +22,7 @@ private BoardCategory boardCategory = BoardCategory.FE;
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @NotNull
     public enum BoardCategory {
         BE("백엔드"),
         FE("프론트엔드"),

@@ -1,5 +1,6 @@
 package com.nextPick.boardComment.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.nextPick.audit.Auditable;
 import com.nextPick.board.entity.Board;
 import com.nextPick.member.entity.Member;
@@ -28,8 +29,11 @@ public class BoardComment extends Auditable {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "POST_ID", nullable = false)
+    @JoinColumn(name = "BOARD_ID", nullable = false)
     private Board board;
+
+
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
