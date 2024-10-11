@@ -87,10 +87,10 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
 
         int participantCount = participantService.findParticipantCount(room.getUuid());
 
-        messagingTemplate.convertAndSend("/topic/roomUuid/" + sessionId, roomUUid);
+        messagingTemplate.convertAndSend("/topic/roomId/" + sessionId, room.getRoomId());
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
-                + "룸 UUID : " + roomUUid + "\n"
+                + "룸 UUID : " + room.getRoomId() + "\n"
                 + "룸 인원 : " + participantCount);
     }
 

@@ -84,12 +84,13 @@ public class RoomService extends ExtractMemberAndVerify {
 
         for (Room room : rooms) {
             // 방의 인원수가 4명 이하이고 룸 직군이 받은 것과 같을 때 return
+            System.out.println(room.getParticipants().size());
             if (room.getParticipants().size() < 4 && room.getOccupation().toString().equals(occupation)) {
                 return room;
             }
         }
 
-        throw new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND);
+        throw new BusinessLogicException(ExceptionCode.ROOM_NOT_ACTIVE);
     }
 
     @Transactional
