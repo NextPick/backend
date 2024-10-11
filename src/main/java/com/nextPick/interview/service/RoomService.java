@@ -107,4 +107,11 @@ public class RoomService extends ExtractMemberAndVerify {
         return optionalRoom.orElseThrow(() ->
                 new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND));
     }
+
+    @Transactional
+    public Room findRoomBySessionId(String sessionId) {
+        Optional<Room> optionalRoom = roomRepository.findBySessionId(sessionId);
+        return optionalRoom.orElseThrow(() ->
+                new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND));
+    }
 }

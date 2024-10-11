@@ -87,7 +87,7 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
 
         int participantCount = participantService.findParticipantCount(room.getUuid());
 
-        messagingTemplate.convertAndSend("/topic/roomId/" + sessionId, room.getRoomId());
+        messagingTemplate.convertAndSend("/topic/roomId/" + sessionId, roomUUid);
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
                 + "룸 UUID : " + room.getRoomId() + "\n"
@@ -97,9 +97,36 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event){
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        String sessionId = headerAccessor.getSessionId();
 
-        String roomId = globalVariables.getCheckRoomId().get(sessionId);
+        Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
+
+        String sessionId = headerAccessor.getSessionId();
+        String email = nativeHeaders.get("email").get(0);
+
+        // member 찾기
+        Member member  = memberService.findMemberByEmail(email);
+        Long memberId = member.getMemberId();
+
+        // sessionId를 이용하여 룸 찾기
+        Room room = roomService.findRoomBySessionId(sessionId);
+        String roomUUid = room.getUuid();
+
+        // roomUUid로 룸의 전체 참가자 찾기
+        List<Participant> participantList = participantService.findParticipants(roomUUid);
+
+        // memberId로 참가자 비교 후 삭제
+        for (Participant participant : participantList) {
+            if (participant.getMember().getMemberId() == memberId) {
+                participantRepository.delete(participant);
+            }
+        }
+
+        // 지운 후 룸의 참가자 수 찾기
+        int participantCount = participantService.findParticipantCount(roomUUid);
+
+        if (participantCount == 0) {
+            roomRepository.delete(room);
+        }
 
         //전역 함수에서 checkRoomIdCount map 을 가져와 해당 룸이 있는지 확인
         if(globalVariables.getCheckRoomIdCount().containsKey(roomId)){
@@ -139,16 +166,25 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
     }
 
 
-    //SessionConnectedEvent 에서 NativeHeader 찾기 메서드
-    private Map<String, List<String>> getNativeHeaders(SessionConnectedEvent event){
-        //messageHeaders 를 추출
-        MessageHeaders headers = event.getMessage().getHeaders();
-        //simpConnectMessage 를 추출
+    private Map<String, List<String>> getNativeHeaders(GenericMessage<?> eventMessage) {
+        // messageHeaders 를 추출
+        MessageHeaders headers = eventMessage.getHeaders();
+        // simpConnectMessage 를 추출
         GenericMessage<?> simpConnectMessage = (GenericMessage<?>) headers.get("simpConnectMessage");
-        //simpConnectMessage 의 MessageHeader 를 추출
+        // simpConnectMessage 의 MessageHeader 를 추출
         MessageHeaders simpHeaders = Objects.requireNonNull(simpConnectMessage).getHeaders();
 
-        //Map<String, List<String>>로 nativeHeader를 추출하여 리턴한다.
+        // Map<String, List<String>>로 nativeHeader를 추출하여 리턴한다.
         return (Map<String, List<String>>) simpHeaders.get("nativeHeaders");
+    }
+
+    // SessionConnectedEvent 에서 NativeHeader 찾기 메서드
+    private Map<String, List<String>> getNativeHeaders(SessionConnectedEvent event) {
+        return getNativeHeaders((GenericMessage<?>) event.getMessage());
+    }
+
+    // SessionDisconnectEvent 에서 NativeHeader 찾기 메서드
+    private Map<String, List<String>> getNativeHeaders(SessionDisconnectEvent event) {
+        return getNativeHeaders((GenericMessage<?>) event.getMessage());
     }
 }
