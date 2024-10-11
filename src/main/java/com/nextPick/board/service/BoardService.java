@@ -63,24 +63,31 @@ public class BoardService extends ExtractMemberAndVerify {
 //    }
 
     public BoardDto.Response createBoard(BoardDto.Post postDto, String dtype) {
+        // 인증된 사용자 정보 추출
+        Member member = extractMemberFromPrincipal(memberRepository);
+
+        // dtype에 따라 QuestionBoard 또는 ReviewBoard로 변환
         Board board;
-        if ("R".equals(dtype)) {
-            ReviewBoard reviewBoard = new ReviewBoard();
-            reviewBoard.setBoardCategory(postDto.getBoardCategory());
-            reviewBoard.setTitle(postDto.getTitle());
-            reviewBoard.setContent(postDto.getContent());
-            board = reviewBoard;
-        } else if ("Q".equals(dtype)) {
-            QuestionBoard questionBoard = new QuestionBoard();
-            questionBoard.setTitle(postDto.getTitle());
-            questionBoard.setContent(postDto.getContent());
-            board = questionBoard;
+        if ("Q".equals(dtype)) {
+            board = new QuestionBoard();  // 여기서 직접 객체 생성
+        } else if ("R".equals(dtype)) {
+            board = new ReviewBoard();  // 여기서 직접 객체 생성
         } else {
             throw new BusinessLogicException(ExceptionCode.INVALID_BOARD_TYPE);
         }
 
-        boardRepository.save(board);
-        return boardMapper.boardToResponse(board);
+        // postDto를 이용해 board 객체에 값 매핑
+        boardMapper.postDtoToBoard(postDto, board);
+
+        // 사용자 정보 설정
+        board.setMember(member);
+        board.setMemberNickname(member.getNickname());
+
+        // 게시글 저장
+        Board savedBoard = boardRepository.save(board);
+
+        // 저장된 게시글 응답 객체로 변환 후 반환
+        return boardMapper.boardToResponse(savedBoard);
     }
 
 

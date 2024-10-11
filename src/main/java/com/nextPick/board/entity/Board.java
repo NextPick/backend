@@ -3,6 +3,7 @@ package com.nextPick.board.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.nextPick.audit.Auditable;
+import com.nextPick.boardComment.entity.BoardComment;
 import com.nextPick.boardLike.entity.BoardLike;
 import com.nextPick.member.entity.Member;
 import lombok.AllArgsConstructor;
@@ -41,6 +42,8 @@ public class Board extends Auditable {
     @Column(nullable = false)
     private Integer viewCount = 0;
 
+
+
     @NotNull
     @Column
     @Enumerated(value = EnumType.STRING)
@@ -55,6 +58,10 @@ public class Board extends Auditable {
         @Setter
         private String statusDescription;
     }
+    @JsonManagedReference
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardComment> comments = new ArrayList<>();
+
 
     @JsonBackReference
     @ManyToOne
