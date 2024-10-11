@@ -1,60 +1,80 @@
+
 package com.nextPick.redis;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Service;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
-@RequiredArgsConstructor
-@Service
 @Slf4j
+@Transactional
+@Component
 public class RedisUtil {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RedisTemplate<Long, Object> longObjectRedisTemplate; // Long 타입의 Key를 사용하는 RedisTemplate
+    private final RedisTemplate<String, Object> redisBlackListTemplate;
 
-    // 해시 데이터 설정 + 만료 시간
-    public void setHashValueWithExpire(String key, String hashKey, Object value, long duration) {
-        HashOperations<String, String, Object> hashOps = redisTemplate.opsForHash();
-        hashOps.put(key, hashKey, value);
-        // 만료 시간 설정
-        redisTemplate.expire(key, Duration.ofSeconds(duration));
+    public RedisUtil(RedisTemplate<String, Object> redisTemplate, RedisTemplate<String, Object> redisBlackListTemplate) {
+        this.redisTemplate = redisTemplate;
+        this.redisBlackListTemplate = redisBlackListTemplate;
     }
 
-    public <T> T getHashValue(String key, String hashKey, Class<T> clazz) {
-        try {
-            HashOperations<String, String, Object> hashOps = redisTemplate.opsForHash();
-            return clazz.cast(hashOps.get(key, hashKey));
-        } catch (Exception e) {
-            log.error("Error occurred while retrieving data from Redis. Key: {}, HashKey: {}", key, hashKey, e);
-            throw e;  // 예외를 다시 던져서 상위 메서드에서도 처리될 수 있도록 함
+    public void setValues(String key, String data) {
+        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        values.set(key, data);
+    }
+
+    public void setValues(String key, String data, Duration duration) {
+        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        values.set(key, data, duration);
+    }
+
+    public void deleteAll() {
+        redisTemplate.delete(Objects.requireNonNull(redisTemplate.keys("*")));
+    }
+
+    @Transactional(readOnly = true)
+    public String getValues(String key) {
+        ValueOperations<String, Object> values = redisTemplate.opsForValue();
+        if (values.get(key) == null) {
+            return "false";
         }
+        return (String) values.get(key);
     }
 
-    // 문자열 데이터 설정
-    public void setDataWithExpire(String key, String value, long duration) {
-        ValueOperations<String, Object> valueOps = redisTemplate.opsForValue();
-        Duration expireDuration = Duration.ofSeconds(duration);
-        valueOps.set(key, value, expireDuration);
+    public boolean checkExistsValue(String value) {
+        return !value.equals("false");
     }
 
-    // 문자열 데이터 조회
-    public String getData(String key) {
-        ValueOperations<String, Object> valueOps = redisTemplate.opsForValue();
-        return (String) valueOps.get(key);
+    public boolean delete(String key) {
+        return Boolean.TRUE.equals(redisTemplate.delete(key));
     }
 
-    public void setAccessToken(Long memberId, String accessToken, long duration) {
-        ValueOperations<String, Object> valueOps = redisTemplate.opsForValue();
-        Duration expireDuration = Duration.ofSeconds(duration);
-        valueOps.set(String.valueOf(memberId), accessToken, expireDuration);  // Long을 String으로 변환하여 저장
+    public boolean hasKey(String key) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
-    public String getAccessToken(Long memberId) {
-        ValueOperations<String, Object> valueOps = redisTemplate.opsForValue();
-        return (String) valueOps.get(String.valueOf(memberId));  // Long을 String으로 변환하여 검색
+    // 블랙리스트 관련
+    public void setBlackList(String key, Object o, Long milliSeconds) {
+        redisBlackListTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(o.getClass()));
+        redisBlackListTemplate.opsForValue().set(key, o, milliSeconds, TimeUnit.MILLISECONDS);
     }
+
+    public Object getBlackList(String key) {
+        return redisBlackListTemplate.opsForValue().get(key);
+    }
+
+    public boolean deleteBlackList(String key) {
+        return Boolean.TRUE.equals(redisBlackListTemplate.delete(key));
+    }
+
+    public boolean hasKeyBlackList(String key) {
+        return Boolean.TRUE.equals(redisBlackListTemplate.hasKey(key));
+    }
+
 }

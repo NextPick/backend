@@ -45,6 +45,7 @@ public enum ExceptionCode {
     UNAUTHORIZED_ACTION(403, "권한이 없습니다."),
 
     //mail 관련
+    UNABLE_TO_SEND_EMAIL(400, "이용불가한 이메일입니다."),
     INVALID_REPORT_TARGET(400, "Report target is invalid");
 
     @Getter
