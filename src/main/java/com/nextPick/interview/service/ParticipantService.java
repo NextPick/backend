@@ -84,4 +84,10 @@ public class ParticipantService extends ExtractMemberAndVerify {
         return participantRepository.findByRoomRoomIdAndMemberMemberId(roomId, memberId);
     }
 
+    @Transactional
+    public Participant findParticipantBySessionId(String sessionId) {
+        Optional<Participant> optionalParticipant = participantRepository.findBySessionId(sessionId);
+        return optionalParticipant.orElseThrow(() ->
+                new BusinessLogicException(ExceptionCode.PARTICIPANT_NOT_FOUND));
+    }
 }

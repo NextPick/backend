@@ -9,6 +9,7 @@ import com.nextPick.interview.repository.RoomRepository;
 import com.nextPick.interview.service.ParticipantService;
 import com.nextPick.interview.service.RoomService;
 import com.nextPick.member.entity.Member;
+import com.nextPick.member.repository.MemberRepository;
 import com.nextPick.member.service.MemberService;
 import com.nextPick.utils.ExtractMemberAndVerify;
 import com.nextPick.utils.JwtUtil;
@@ -58,6 +59,9 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
     @Autowired
     private ParticipantRepository participantRepository;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
     @EventListener
     public void handleWebsocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -98,17 +102,20 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event){
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
-
         String sessionId = headerAccessor.getSessionId();
-        String email = nativeHeaders.get("email").get(0);
 
         // member 찾기
-        Member member  = memberService.findMemberByEmail(email);
+        Participant findParticipant = participantService.findParticipantBySessionId(sessionId);
+
+        Member member  = memberRepository.findById(
+                findParticipant.getMember().getMemberId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
         Long memberId = member.getMemberId();
 
-        // sessionId를 이용하여 룸 찾기
-        Room room = roomService.findRoomBySessionId(sessionId);
+        // 룸 아이디를 이용해서 룸 찾기
+        Long roomId = findParticipant.getRoom().getRoomId();
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND));
         String roomUUid = room.getUuid();
 
         // roomUUid로 룸의 전체 참가자 찾기
@@ -124,45 +131,14 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         // 지운 후 룸의 참가자 수 찾기
         int participantCount = participantService.findParticipantCount(roomUUid);
 
+        // 방의 참가자가 0명일 경우 방 삭제
         if (participantCount == 0) {
             roomRepository.delete(room);
         }
 
-        //전역 함수에서 checkRoomIdCount map 을 가져와 해당 룸이 있는지 확인
-        if(globalVariables.getCheckRoomIdCount().containsKey(roomId)){
-            if(globalVariables.getCheckRoomIdCount().get(roomId) - 1 <= 0){
-                //만약 해당 roomId의 유저가 0 이하라면 삭제한다.
-                globalVariables.getCheckRoomIdCount().remove(roomId);
-            }
-            else{
-                //아니면 해당 roomId의 유저를 -1 해준다.
-                globalVariables.getCheckRoomIdCount().put(roomId, globalVariables.getCheckRoomIdCount().get(roomId) - 1);
-            }
-        }
-
-        //전역 함수에 roomCheckWaitingClient map 을 가져와 해당 룸이 있는지 확인 한다.
-        if(globalVariables.getRoomCheckWaitingClient().containsKey(roomId)){
-            Map<String , String> returnMap = new HashMap<>();
-
-            returnMap.put("camKey", globalVariables.getCheckCamKey().get(sessionId));
-            returnMap.put("roomCount", String.valueOf(globalVariables.getCheckRoomIdCount().get(roomId)));
-
-            //해당 roomCheckWaitingClient 에서 DeferredResult 에 setResult를 보내어서 해당되는 /poll/leave/room/{roomId} api에 신호를 보낸다.
-            globalVariables.getRoomCheckWaitingClient().get(roomId).setResult(
-                    new ResponseEntity<>(CommonResp.builder()
-                            .data(returnMap)
-                            .status_code(HttpStatus.OK.value())
-                            .result(CommonResp.ResultType.SUCCESS)
-                            .build(),
-                            HttpStatus.OK)
-            );
-        }
-
-
-
         log.info("\n웹소켓 끊김 : " + sessionId+"\n"
                 +"룸 ID : " + roomId + "\n"
-                +"룸 인원 : " + globalVariables.getCheckRoomIdCount().get(roomId) );
+                +"룸 인원 : " + participantCount );
     }
 
 
