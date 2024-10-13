@@ -19,7 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,16 +46,33 @@ public class BoardService extends ExtractMemberAndVerify {
 
 
 
-    public Page<BoardDto.Response> getBoardsByDtype(String dtype, Pageable pageable) {
+    public Page<BoardDto.Response> getBoardsByDtype(String dtype, String sort, String keyword, Pageable pageable) {
         Page<? extends Board> boardPage;
+        Sort sortBy;
+        switch (sort) {
+            case "recent":
+                sortBy = Sort.by("createdAt").descending();
+                break;
+            case "likes":
+                sortBy = Sort.by("likesCount").descending();
+            case "views":
+                sortBy = Sort.by("viewCount").descending();
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid sort type: " + sort);
+        }
+
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortBy);
+
 
         if ("Q".equals(dtype)) {
-            boardPage = boardRepository.findAllQuestionBoards(Board.BoardStatus.BOARD_POST, pageable);
+            boardPage = boardRepository.findAllQuestionBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
         } else if ("R".equals(dtype)) {
-            boardPage = boardRepository.findAllReviewBoards(Board.BoardStatus.BOARD_POST, pageable);
+            boardPage = boardRepository.findAllReviewBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
         } else {
             throw new IllegalArgumentException("Invalid dtype value");
         }
+
 
         return boardPage.map(boardMapper::boardToResponse);
     }
@@ -85,7 +104,7 @@ public class BoardService extends ExtractMemberAndVerify {
 
 
 
-    // 게시글 수정
+
     @Transactional
     public BoardDto.Response updateBoard(Long boardId, BoardDto.Patch patchDto, List<MultipartFile> newImages, List<String> imagesToDelete) throws IOException {
         try {

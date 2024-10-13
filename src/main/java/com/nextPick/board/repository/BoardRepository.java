@@ -13,9 +13,19 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long> {
-    @Query("SELECT b FROM Board b WHERE TYPE(b) = QuestionBoard AND b.boardStatus = :boardStatus")
-    Page<QuestionBoard> findAllQuestionBoards(@Param("boardStatus") Board.BoardStatus boardStatus, Pageable pageable);
+    @Query("SELECT b FROM ReviewBoard b WHERE b.boardStatus = :status AND " +
+            "(:keyword IS NULL OR :keyword = '' OR (b.title LIKE %:keyword% OR b.content LIKE %:keyword%))")
+    Page<ReviewBoard> findAllReviewBoardsWithKeyword(@Param("status") Board.BoardStatus status,
+                                                     @Param("keyword") String keyword,
+                                                     Pageable pageable);
 
-    @Query("SELECT b FROM Board b WHERE TYPE(b) = ReviewBoard AND b.boardStatus = :boardStatus")
-    Page<ReviewBoard> findAllReviewBoards(@Param("boardStatus") Board.BoardStatus boardStatus, Pageable pageable);
+    @Query("SELECT b FROM QuestionBoard b WHERE b.boardStatus = :status AND " +
+            "(:keyword IS NULL OR :keyword = '' OR (b.title LIKE %:keyword% OR b.content LIKE %:keyword%))")
+    Page<QuestionBoard> findAllQuestionBoardsWithKeyword(@Param("status") Board.BoardStatus status,
+                                                         @Param("keyword") String keyword,
+                                                         Pageable pageable);
+
+
+
+
 }
