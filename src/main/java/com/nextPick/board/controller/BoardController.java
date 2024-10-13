@@ -69,34 +69,38 @@ public class BoardController {
     }
 
 
+    // 리뷰 보드 데이터를 가져오는 메서드
     @GetMapping("/R")
     public ResponseEntity<?> getReviewBoards(
             @Positive @RequestParam int page,
-            @Positive @RequestParam int size) {
+            @Positive @RequestParam int size,
+            @RequestParam(required = false, defaultValue = "recent") String sort,
+            @RequestParam(required = false, defaultValue = "*") String keyword) {
         try {
             Pageable pageable = PageRequest.of(page - 1, size);
-            Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("R", pageable);
-
+            Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("R", sort, keyword, pageable);
             List<BoardDto.Response> responses = boardPage.getContent();
             return new ResponseEntity<>(responses, HttpStatus.OK);
         } catch (Exception e) {
-
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+
     @GetMapping("/Q")
     public ResponseEntity<List<BoardDto.Response>> getQuestionBoards(
             @Positive @RequestParam int page,
-            @Positive @RequestParam int size) {
-
+            @Positive @RequestParam int size,
+            @RequestParam(required = false, defaultValue = "recent") String sort,
+            @RequestParam(required = false, defaultValue = "*") String keyword) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("Q", pageable);
-
+        Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("Q", sort, keyword, pageable);
         List<BoardDto.Response> responses = boardPage.getContent();
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
+
+
 
 
 
