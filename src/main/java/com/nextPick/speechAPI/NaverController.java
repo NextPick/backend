@@ -9,27 +9,31 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 
 @RestController
 public class NaverController {
     @PostMapping("fileUpload")
-    public String fileUpload(@RequestParam("uploadFile") MultipartFile uploadFile, HttpServletRequest req) {
+    public String fileUpload(@RequestParam("uploadFile") MultipartFile uploadFile, HttpServletRequest req) throws IOException {
         System.out.println("NaverCloudController STT : " + new Date());
-        String uploadPath = req.getServletContext().getRealPath("/upload");
-        String fileName = uploadFile.getOriginalFilename();
-        String filePath = uploadPath + "/" + fileName;
+        String resp = "";
+        try{
+            File tempFile = File.createTempFile("temp", uploadFile.getOriginalFilename());
+            uploadFile.transferTo(tempFile);
+            tempFile.deleteOnExit(); // 애플리케이션 종료 시 임시 파일 자동 삭제
 
-        try {
-            BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(new File(filePath)));
-            os.write(uploadFile.getBytes());
-            os.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "fail";
+            final ClovaSpeechClient clovaSpeechClient = new ClovaSpeechClient();
+            ClovaSpeechClient.NestRequestEntity requestEntity = new ClovaSpeechClient.NestRequestEntity();
+            resp = clovaSpeechClient.upload(tempFile, requestEntity);
+
+
+
+//            resp = NaverCloud.stt(tempFile);
+        }catch (Exception e){
+            System.out.println("MultipartFile trans file Fail");
         }
 
-        String resp = NaverCloud.stt(filePath);
 
         return resp;
     }

@@ -6,6 +6,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExceptionCode {
 
+    //statistics
+    STATISTICS_NOT_FOUND(404,"해당 통계 이름과 일치하는 정보를 찾을 수 없습니다."),
+
     //Feedbacks
     INTERVIEW_NOT_FOUND(404, "면접 피드백을 찾을 수 없습니다."),
     MENTOR_FEEDBACK_NOT_FOUND(404, "멘토 피드백을 찾을 수 없습니다."),

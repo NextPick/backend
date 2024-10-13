@@ -9,12 +9,12 @@ import org.springframework.context.ApplicationEvent;
 public class CustomEvent extends ApplicationEvent {
     private EventCase methodName;
     private String description;
-    private int count;
+    private String type;
 
-    public CustomEvent(Object source, EventCase methodName,String description, int count) {
+    public CustomEvent(Object source, EventCase methodName,String description, String type) {
         super(source);
         this.methodName = methodName;
         this.description = description;
-        this.count = count;
+        this.type = type;
     }
 }
