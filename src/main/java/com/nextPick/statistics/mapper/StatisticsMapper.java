@@ -19,10 +19,10 @@ public interface StatisticsMapper {
                 case "Spring":
                     response.setSpring(statistics.getCount());
                     break;
-                case "Node.js":
+                case "NodeJs":
                     response.setNodeJs(statistics.getCount());
                     break;
-                case "Express.js":
+                case "ExpressJs":
                     response.setExpressJs(statistics.getCount());
                     break;
                 case "Django":
@@ -50,25 +50,25 @@ public interface StatisticsMapper {
                 case "OS":
                     response.setOS(statistics.getCount());
                     break;
-                case "Data Structure":
+                case "DataStructure":
                     response.setDataStructure(statistics.getCount());
                     break;
                 case "Algorithms":
                     response.setAlgorithms(statistics.getCount());
                     break;
-                case "Software Engineering":
+                case "SoftwareEngineering":
                     response.setSoftwareEngineering(statistics.getCount());
                     break;
-                case "Design Patterns":
+                case "DesignPatterns":
                     response.setDesignPatterns(statistics.getCount());
                     break;
-                case "Computer Architecture":
+                case "ComputerArchitecture":
                     response.setComputerArchitecture(statistics.getCount());
                     break;
                 case "Cybersecurity":
                     response.setCybersecurity(statistics.getCount());
                     break;
-                case "Artificial Intelligence":
+                case "ArtificialIntelligence":
                     response.setArtificialIntelligence(statistics.getCount());
                     break;
                 // FE 서브카테고리
@@ -87,19 +87,19 @@ public interface StatisticsMapper {
                 case "CSS3":
                     response.setCSS3(statistics.getCount());
                     break;
-                case "JavaScript (ES6+)":
+                case "JavaScriptES6Plus":
                     response.setJavaScriptES6Plus(statistics.getCount());
                     break;
                 case "TypeScript":
                     response.setTypeScript(statistics.getCount());
                     break;
-                case "SASS/SCSS":
+                case "SassScss":
                     response.setSassScss(statistics.getCount());
                     break;
                 case "Webpack":
                     response.setWebpack(statistics.getCount());
                     break;
-                case "Responsive Web Design":
+                case "ResponsiveWebDesign":
                     response.setResponsiveWebDesign(statistics.getCount());
                     break;
                 default:

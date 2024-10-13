@@ -1,7 +1,36 @@
 -- QuestionCategory Insert
 INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (1, 'Java');
-INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (2, 'CS');
-INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (3, 'Spring');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (2, 'Spring');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (3, 'NodeJs');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (4, 'ExpressJs');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (5, 'Django');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (6, 'Flask');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (7, 'Ruby');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (8, 'PHP');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (9, 'GraphQL');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (10, 'MySQL');
+
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (11, 'Networking');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (12, 'OS');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (13, 'DataStructure');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (14, 'Algorithms');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (15, 'SoftwareEngineering');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (16, 'DesignPatterns');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (17, 'ComputerArchitecture');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (18, 'Cybersecurity');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (19, 'ArtificialIntelligence');
+
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (20, 'React');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (21, 'Vue');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (22, 'Angular');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (23, 'HTML5');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (24, 'CSS3');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (25, 'JavaScriptES6Plus');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (26, 'TypeScript');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (27, 'SassScss');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (28, 'Webpack');
+INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (29, 'ResponsiveWebDesign');
+
 
 -- QuestionList Insert
 INSERT IGNORE INTO question_list (question_list_id, answer, correct_count, correct_rate, question, wrong_count, question_category_id)
