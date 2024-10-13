@@ -1,5 +1,6 @@
 package com.nextPick.member.controller;
 
+import com.nextPick.dto.MultiResponseDto;
 import com.nextPick.dto.SingleResponseDto;
 import com.nextPick.member.dto.MemberDto;
 import com.nextPick.member.entity.Member;
@@ -7,6 +8,7 @@ import com.nextPick.member.mapper.MemberMapper;
 import com.nextPick.member.service.MemberService;
 import com.nextPick.utils.UriCreator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @Validated
@@ -69,6 +72,18 @@ public class MemberController {
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(findMember)), HttpStatus.OK);
     }
 
+
+    @GetMapping("/mentor")
+    public ResponseEntity getMembers(@Positive @RequestParam int page,
+                                     @Positive @RequestParam int size) {
+        Page<Member> findPageMembers = service.findMemberPage(page-1,size);
+        List<Member> findListMembers = findPageMembers.getContent();
+        return new ResponseEntity<>(
+                new MultiResponseDto<>(memberMapper.memberListToMemberListDtoResponse(findListMembers), findPageMembers),
+                HttpStatus.OK);
+    }
+
+
     @PatchMapping("/admin/{member-id}")
     public ResponseEntity patchMember(@PathVariable("member-id") @Positive long memberId,
                                       @Valid @RequestBody MemberDto.AdminPatch adminPatch) {
@@ -77,9 +92,15 @@ public class MemberController {
                 new SingleResponseDto<>(memberMapper.memberToResponseDto(member)), HttpStatus.OK);
     }
 
+    @DeleteMapping("/admin/{member-id}")
+    public ResponseEntity deleteMember(@PathVariable("member-id") @Positive long memberId) {
+        service.deleteMember(memberId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @DeleteMapping
-    public ResponseEntity deleteMember() {
-        service.deleteMember();
+    public ResponseEntity changeStatusToDeleteMember() {
+        service.changeStatusToDelete();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

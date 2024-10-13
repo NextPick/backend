@@ -1,9 +1,7 @@
 package com.nextPick.member.dto;
 
 import com.nextPick.member.entity.Member;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
@@ -98,7 +96,10 @@ public class MemberDto {
     @Getter
     @Setter
     @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class Response{
+        private long memberId;
         private String name;
         private String gender;
         private String email;
