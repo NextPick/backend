@@ -6,16 +6,13 @@ import java.net.URL;
 
 public class NaverCloud {
 
-    public static String stt(String filePath) {
+    public static String stt(File voiceFile) {
         String clientId = "w9fe64fxym";             // Application Client ID";
         String clientSecret = "EH2V4WhrneVn3Y9JrcxJPRWx03TTW0559ximXKhN";     // Application Client Secret";
         StringBuffer response = null;
 
         try {
-            String imgFile = filePath;
-            File voiceFile = new File(imgFile);
-
-            String language = "Kor";        // 언어 코드 ( Kor, Jpn, Eng, Chn )
+            String language = "ko-KR";        // 언어 코드 ( Kor, Jpn, Eng, Chn )
             String apiURL = "https://naveropenapi.apigw.ntruss.com/recog/v1/stt?lang=" + language;
             URL url = new URL(apiURL);
 
