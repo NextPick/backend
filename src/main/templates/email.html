@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이메일 인증</title>
+    <style>
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .email-wrapper {
+            max-width: 600px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin: 0 20px;
+        }
+        .email-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0043ce;
+            margin-bottom: 16px;
+        }
+        .email-subtitle {
+            font-size: 18px;
+            color: #4f4f4f;
+            margin-bottom: 24px;
+        }
+        .email-body {
+            color: #5c5c5c;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        .verification-code-box {
+            background-color: #e3f2fd;
+            border: 2px solid #1e88e5;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            display: inline-block;
+        }
+        .verification-code {
+            font-size: 26px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            color: #1565c0;
+        }
+        .email-footer {
+            font-size: 14px;
+            color: #888;
+            margin-top: 32px;
+        }
+        .email-footer p {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="email-wrapper">
+    <div class="email-header">nextpick 계정 활성화</div>
+    <div class="email-subtitle">시작할 준비가 되셨나요? 이메일을 확인해주세요.</div>
+    <div class="email-body">
+        nextpick에 가입해 주셔서 감사합니다! 회원가입을 완료하려면 아래의 인증 코드를 입력해주세요.<br><br>
+        <strong>이 코드는 10분 후에 만료됩니다.</strong>
+    </div>
+    <div class="verification-code-box">
+        <span class="verification-code" th:text="${code}">75niC46G</span>
+    </div>
+    <div class="email-footer">
+        <p>이 메일을 요청하지 않았다면, 무시해 주세요.</p>
+        <p>문의사항이 있으신가요? <a href="mailto:support@nextpick.com" style="color: #0043ce;">고객 지원</a>에 문의하세요.</p>
+    </div>
+</div>
+</body>
+</html>
