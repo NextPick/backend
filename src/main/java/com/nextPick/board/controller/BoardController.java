@@ -14,9 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import java.io.IOException;
 import java.util.List;
 @RestController
 @RequestMapping("/boards")
@@ -27,15 +29,23 @@ public class BoardController {
     private final BoardService boardService;
 
     @PostMapping("/{dtype}")
-    public ResponseEntity<BoardDto.Response> createBoard(@PathVariable String dtype,
-                                                         @Valid @RequestBody BoardDto.Post postDto) {
-        BoardDto.Response response = boardService.createBoard(postDto, dtype);
+    public ResponseEntity<BoardDto.Response> createBoard(
+            @PathVariable String dtype,
+            @ModelAttribute @Valid BoardDto.Post postDto,
+            @RequestParam("images") List<MultipartFile> images) throws IOException {
+        BoardDto.Response response = boardService.createBoard(postDto, dtype, images);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+
     @PatchMapping("/{boardId}")
-    public ResponseEntity<BoardDto.Response> updateBoard(@PathVariable Long boardId, @Valid @RequestBody BoardDto.Patch patchDto) {
-        BoardDto.Response response = boardService.updateBoard(boardId, patchDto);
+    public ResponseEntity<BoardDto.Response> updateBoard(
+            @PathVariable Long boardId,
+            @Valid @ModelAttribute BoardDto.Patch patchDto,  // 텍스트 수정
+            @RequestParam(value = "newImages", required = false) List<MultipartFile> newImages,
+            @RequestParam(value = "imagesToDelete", required = false) List<String> imagesToDelete
+    ) throws IOException {
+        BoardDto.Response response = boardService.updateBoard(boardId, patchDto, newImages, imagesToDelete);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -64,15 +74,15 @@ public class BoardController {
             @Positive @RequestParam int page,
             @Positive @RequestParam int size) {
         try {
-            Pageable pageable = PageRequest.of(page - 1, size);  // 페이지는 0부터 시작하므로 page - 1
+            Pageable pageable = PageRequest.of(page - 1, size);
             Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("R", pageable);
 
-            List<BoardDto.Response> responses = boardPage.getContent();  // 페이징된 게시글 목록
-            return new ResponseEntity<>(responses, HttpStatus.OK);  // 응답 반환
+            List<BoardDto.Response> responses = boardPage.getContent();
+            return new ResponseEntity<>(responses, HttpStatus.OK);
         } catch (Exception e) {
-            // 예외 로그를 출력
+
             e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);  // 에러 메시지 반환
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -81,11 +91,11 @@ public class BoardController {
             @Positive @RequestParam int page,
             @Positive @RequestParam int size) {
 
-        Pageable pageable = PageRequest.of(page - 1, size);  // 페이지는 0부터 시작하므로 page - 1
+        Pageable pageable = PageRequest.of(page - 1, size);
         Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("Q", pageable);
 
-        List<BoardDto.Response> responses = boardPage.getContent();  // 페이징된 게시글 목록
-        return new ResponseEntity<>(responses, HttpStatus.OK);  // 응답 반환
+        List<BoardDto.Response> responses = boardPage.getContent();
+        return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
 

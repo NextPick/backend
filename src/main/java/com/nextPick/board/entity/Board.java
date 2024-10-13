@@ -42,7 +42,8 @@ public class Board extends Auditable {
     @Column(nullable = false)
     private Integer viewCount = 0;
 
-
+    @ElementCollection
+    private List<String> imageUrls = new ArrayList<>();
 
     @NotNull
     @Column

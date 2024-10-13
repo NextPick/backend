@@ -13,6 +13,7 @@ import com.nextPick.exception.ExceptionCode;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
 import com.nextPick.utils.ExtractMemberAndVerify;
+import com.nextPick.utils.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -21,7 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -36,75 +40,89 @@ public class BoardService extends ExtractMemberAndVerify {
     private final MemberRepository memberRepository;
     private final BoardLikeRepository boardLikeRepository;
     private final BoardMapper boardMapper;
-
+    private final S3Uploader s3Uploader;
 
 
 
     public Page<BoardDto.Response> getBoardsByDtype(String dtype, Pageable pageable) {
-        logger.info("Fetching boards of type: {}", dtype);
-        Page<Board> boardPage = boardRepository.findAllByDtype(dtype, pageable);
-        logger.info("Found {} boards of type {}", boardPage.getTotalElements(), dtype);
+        Page<? extends Board> boardPage;
+
+        if ("Q".equals(dtype)) {
+            boardPage = boardRepository.findAllQuestionBoards(Board.BoardStatus.BOARD_POST, pageable);
+        } else if ("R".equals(dtype)) {
+            boardPage = boardRepository.findAllReviewBoards(Board.BoardStatus.BOARD_POST, pageable);
+        } else {
+            throw new IllegalArgumentException("Invalid dtype value");
+        }
 
         return boardPage.map(boardMapper::boardToResponse);
     }
 
 
 
-
-
-    // 게시글 생성
-//    public BoardDto.Response createBoard(BoardDto.Post postDto) {
-//        Member member = extractMemberFromPrincipal(memberRepository);
-//        Board board = boardMapper.postDtoToBoard(postDto);
-//        board.setMember(member);
-//        board.setMemberNickname(member.getNickname());
-//        Board savedBoard = boardRepository.save(board);
-//        return boardMapper.boardToResponse(savedBoard);
-//    }
-
-    public BoardDto.Response createBoard(BoardDto.Post postDto, String dtype) {
-        // 인증된 사용자 정보 추출
+    public BoardDto.Response createBoard(BoardDto.Post postDto, String dtype, List<MultipartFile> images) throws IOException {
         Member member = extractMemberFromPrincipal(memberRepository);
-
-        // dtype에 따라 QuestionBoard 또는 ReviewBoard로 변환
         Board board;
         if ("Q".equals(dtype)) {
-            board = new QuestionBoard();  // 여기서 직접 객체 생성
+            board = new QuestionBoard();
         } else if ("R".equals(dtype)) {
-            board = new ReviewBoard();  // 여기서 직접 객체 생성
+            board = new ReviewBoard();
         } else {
             throw new BusinessLogicException(ExceptionCode.INVALID_BOARD_TYPE);
         }
 
-        // postDto를 이용해 board 객체에 값 매핑
         boardMapper.postDtoToBoard(postDto, board);
-
-        // 사용자 정보 설정
         board.setMember(member);
         board.setMemberNickname(member.getNickname());
-
-        // 게시글 저장
+        List<String> imageUrls = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            imageUrls = s3Uploader.uploadImages(images);
+        }
+        board.setImageUrls(imageUrls);
         Board savedBoard = boardRepository.save(board);
-
-        // 저장된 게시글 응답 객체로 변환 후 반환
         return boardMapper.boardToResponse(savedBoard);
     }
 
 
 
-
     // 게시글 수정
     @Transactional
-    public BoardDto.Response updateBoard(Long boardId, BoardDto.Patch patchDto) {
-        Member member = extractMemberFromPrincipal(memberRepository);
-        Board board = findVerifiedBoard(boardId);
-        validateBoardOwnership(board, member);
-        boardMapper.patchDtoToBoard(patchDto, board);
-        Board updatedBoard = boardRepository.save(board);
-        return boardMapper.boardToResponse(updatedBoard);
+    public BoardDto.Response updateBoard(Long boardId, BoardDto.Patch patchDto, List<MultipartFile> newImages, List<String> imagesToDelete) throws IOException {
+        try {
+            Member member = extractMemberFromPrincipal(memberRepository);
+            Board board = findVerifiedBoard(boardId);
+            validateBoardOwnership(board, member);
+            boardMapper.patchDtoToBoard(patchDto, board);
+
+            // 이미지 삭제 처리 (선택적)
+            if (imagesToDelete != null && !imagesToDelete.isEmpty()) {
+                List<String> currentImages = board.getImageUrls();
+                currentImages.removeAll(imagesToDelete);
+
+                for (String imageUrl : imagesToDelete) {
+                    System.out.println("이미지 삭제 시도: " + imageUrl);
+                    s3Uploader.delete(imageUrl);
+                    System.out.println("이미지 삭제 완료: " + imageUrl);
+                }
+                board.setImageUrls(currentImages);
+            }
+            // 새 이미지 추가 처리 (선택적)
+            if (newImages != null && !newImages.isEmpty()) {
+                List<String> currentImages = board.getImageUrls();
+                List<String> newImageUrls = s3Uploader.uploadImages(newImages);
+                currentImages.addAll(newImageUrls);
+                board.setImageUrls(currentImages);
+            }
+
+            Board updatedBoard = boardRepository.save(board);
+            return boardMapper.boardToResponse(updatedBoard);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND);
+        }
     }
 
-    // 좋아요 토글
+
     public void toggleLike(Long boardId) {
         Member member = extractMemberFromPrincipal(memberRepository);
         Board board = findVerifiedBoard(boardId);
@@ -125,38 +143,45 @@ public class BoardService extends ExtractMemberAndVerify {
         boardRepository.save(board);
     }
 
-    // 게시글 삭제
+    @Transactional
     public void deleteBoard(long boardId) {
         Member member = extractMemberFromPrincipal(memberRepository);
         Board board = findVerifiedBoard(boardId);
         validateBoardOwnership(board, member);
+
+        if (board.getImageUrls() != null && !board.getImageUrls().isEmpty()) {
+            s3Uploader.deleteImages(board.getImageUrls());  // 이미지 URL 리스트를 전달하여 삭제
+        }
+
         board.setBoardStatus(Board.BoardStatus.BOARD_DELETED);
         boardRepository.save(board);
     }
 
-    // 조회수 증가 후 게시글 가져오기
     public BoardDto.Response getBoardAndIncrementViewCount(Long boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND));
-
         // 게시글이 삭제 상태인 경우 예외 처리
         if (board.getBoardStatus() == Board.BoardStatus.BOARD_DELETED) {
             throw new BusinessLogicException(ExceptionCode.BOARD_DELETED); // 커스텀 예외 처리
         }
 
         board.incrementViewCount();
-        boardRepository.save(board);  // 변경된 조회수를 저장
+        boardRepository.save(board);
 
         return boardMapper.boardToResponse(board);
     }
 
-    // 게시글 검증
     private Board findVerifiedBoard(long boardId) {
-        return boardRepository.findById(boardId)
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.BOARD_NOT_FOUND));
+        if (board.getBoardStatus() == Board.BoardStatus.BOARD_DELETED) {
+            throw new BusinessLogicException(ExceptionCode.BOARD_DELETED);
+        }
+
+        return board;
     }
 
-    // 게시글 소유권 검증
+
     private void validateBoardOwnership(Board board, Member member) {
         if (board.getMember() == null || member == null ||
                 !Objects.equals(board.getMember().getMemberId(), member.getMemberId())) {

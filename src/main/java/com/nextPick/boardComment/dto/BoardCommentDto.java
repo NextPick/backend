@@ -41,6 +41,5 @@ public class BoardCommentDto {
         private Long parentCommentId;
         private String content;
         private String nickname;
-        private String profileImage;
     }
 }

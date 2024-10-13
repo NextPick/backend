@@ -1,7 +1,7 @@
 package com.nextPick.member.controller;
 
 import com.nextPick.dto.SingleResponseDto;
-import com.nextPick.helper.email2.EmailVerificationService;
+import com.nextPick.helper.email.EmailVerificationService;
 import com.nextPick.member.dto.MemberDto;
 import com.nextPick.member.dto.VerificationRequest;
 import com.nextPick.member.entity.Member;

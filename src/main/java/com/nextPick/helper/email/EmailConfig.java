@@ -1,4 +1,4 @@
-package com.nextPick.helper.email2;
+package com.nextPick.helper.email;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
