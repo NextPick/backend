@@ -2,7 +2,9 @@ package com.nextPick.member.controller;
 
 import com.nextPick.dto.MultiResponseDto;
 import com.nextPick.dto.SingleResponseDto;
+import com.nextPick.helper.email.EmailVerificationService;
 import com.nextPick.member.dto.MemberDto;
+import com.nextPick.member.dto.VerificationRequest;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.mapper.MemberMapper;
 import com.nextPick.member.service.MemberService;
@@ -27,28 +29,25 @@ public class MemberController {
     private final static String MEMBER_DEFAULT_URL = "/members";
     private final MemberService service;
     private final MemberMapper memberMapper;
-//    private final EmailVerificationService emailVerificationService;
-//    private final AuthService authService;
+    private final EmailVerificationService emailVerificationService;
 
-    //이메일 인증코드 전송
-//    @PostMapping("/auth-code")
-//    public ResponseEntity signUpMember(@Valid @RequestBody VerificationRequest verificationRequest) {
-//        emailVerificationService.sendCodeToEmail(verificationRequest.getEmail());
-//        return ResponseEntity.accepted().body("이메일로 인증 코드를 전송했습니다. 인증 코드를 입력하여 회원가입을 완료하세요.");
-//    }
+    @PostMapping("/auth-code")
+    public ResponseEntity signUpMember(@Valid @RequestBody VerificationRequest verificationRequest) {
+        emailVerificationService.sendCodeToEmail(verificationRequest.getEmail());
+        return ResponseEntity.accepted().body("이메일로 인증 코드를 전송했습니다. 인증 코드를 입력하여 회원가입을 완료하세요.");
+    }
 
-    //인증코드 검증
-//    @PostMapping("/verify-auth-code")
-//    public ResponseEntity verifyEmail(@Valid @RequestBody VerificationRequest verificationRequest) {
-//        String email = verificationRequest.getEmail();
-//        String authCode = verificationRequest.getAuthCode();
-//
-//        boolean isVerified = emailVerificationService.verifyCode(email, authCode);
-//        if (!isVerified) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 코드가 올바르지 않습니다.");
-//        }
-//        return ResponseEntity.ok("이메일 인증이 완료되었습니다. 회원가입을 진행하세요.");
-//    }
+    @PostMapping("/verify-auth-code")
+    public ResponseEntity verifyEmail(@Valid @RequestBody VerificationRequest verificationRequest) {
+        String email = verificationRequest.getEmail();
+        String authCode = verificationRequest.getAuthCode();
+
+        boolean isVerified = emailVerificationService.verifyCode(email, authCode);
+        if (!isVerified) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 코드가 올바르지 않습니다.");
+        }
+        return ResponseEntity.ok("이메일 인증이 완료되었습니다. 회원가입을 진행하세요.");
+    }
 
     /**
      * 회원가입 하는 메서드

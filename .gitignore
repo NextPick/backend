@@ -160,7 +160,7 @@ $RECYCLE.BIN/
 *.msix
 *.msm
 *.msp
-
+*.pem
 # Windows shortcuts
 *.lnk
 

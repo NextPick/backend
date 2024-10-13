@@ -4,8 +4,10 @@ import com.nextPick.board.entity.ReviewBoard;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 public class BoardDto {
 
@@ -57,11 +59,13 @@ public class BoardDto {
         private String title;
         private String author;
         private String content;
-        private String contentImg;  // 이미지 경로
-        private String boardType;
-        private String boardStatus;  // 게시글 상태
-        private int likesCount;  // 좋아요 수
-        private int viewCount;   // 조회수
+        private List<String> imageUrls;
+        private String dtype;
+        private String boardStatus;
+        private int likesCount;
+        private int viewCount;
+        private int commentCount;
+        private ReviewBoard.BoardCategory boardCategory;
     }
 
     @Getter
@@ -73,11 +77,12 @@ public class BoardDto {
         private String title;
         private String author;
         private String content;
-        private String contentImg;  // 이미지 경로
-//        private List<CommentDto.Response> comments;  // 댓글 리스트
-        private String boardType;
-        private String boardStatus;  // 게시글 상태
-        private int likesCount;  // 좋아요 수
-        private int viewCount;   // 조회수
+        private List<String> imageUrls;
+        //        private List<CommentDto.Response> comments;
+        private String dtype;
+        private String boardStatus;
+        private int likesCount;
+        private int viewCount;
+        private int commentCount;
     }
 }

@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class ErrorResponder {
+public class   ErrorResponder {
     public static void sendErrorResponse (HttpServletResponse response , HttpStatus httpStatus ) throws IOException {
         Gson gson = new Gson();
         ErrorResponse errorResponse = ErrorResponse.of(httpStatus);
