@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 public class BoardDto {
 
@@ -58,7 +59,7 @@ public class BoardDto {
         private String title;
         private String author;
         private String content;
-        private String contentImg;
+        private List<String> imageUrls;
         private String dtype;
         private String boardStatus;
         private int likesCount;
@@ -76,8 +77,8 @@ public class BoardDto {
         private String title;
         private String author;
         private String content;
-        private String contentImg;
-//        private List<CommentDto.Response> comments;
+        private List<String> imageUrls;
+        //        private List<CommentDto.Response> comments;
         private String dtype;
         private String boardStatus;
         private int likesCount;

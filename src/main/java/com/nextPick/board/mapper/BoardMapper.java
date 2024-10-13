@@ -35,11 +35,13 @@ public interface BoardMapper {
         responseBuilder.boardId(board.getBoardId());
         responseBuilder.title(board.getTitle());
         responseBuilder.author(board.getMemberNickname());
+        responseBuilder.boardStatus(board.getBoardStatus().getStatusDescription());
         responseBuilder.content(board.getContent());
         responseBuilder.dtype(board.getClass().getSimpleName());
         responseBuilder.likesCount(board.getLikesCount());
         responseBuilder.viewCount(board.getViewCount());
         responseBuilder.commentCount(board.getComments().size());
+        responseBuilder.imageUrls(board.getImageUrls());
 //                    .boardId(board.getBoardId())
 //                .title(board.getTitle())
 //                .author(board.getMemberNickname())

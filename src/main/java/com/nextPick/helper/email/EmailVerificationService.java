@@ -1,4 +1,4 @@
-package com.nextPick.helper.email2;
+package com.nextPick.helper.email;
 
 import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;

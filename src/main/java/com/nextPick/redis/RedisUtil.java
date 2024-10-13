@@ -17,11 +17,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class RedisUtil {
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RedisTemplate<String, Object> redisBlackListTemplate;
 
     public RedisUtil(RedisTemplate<String, Object> redisTemplate, RedisTemplate<String, Object> redisBlackListTemplate) {
         this.redisTemplate = redisTemplate;
-        this.redisBlackListTemplate = redisBlackListTemplate;
+
     }
 
     public void setValues(String key, String data) {
@@ -57,24 +56,6 @@ public class RedisUtil {
 
     public boolean hasKey(String key) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
-    }
-
-    // 블랙리스트 관련
-    public void setBlackList(String key, Object o, Long milliSeconds) {
-        redisBlackListTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(o.getClass()));
-        redisBlackListTemplate.opsForValue().set(key, o, milliSeconds, TimeUnit.MILLISECONDS);
-    }
-
-    public Object getBlackList(String key) {
-        return redisBlackListTemplate.opsForValue().get(key);
-    }
-
-    public boolean deleteBlackList(String key) {
-        return Boolean.TRUE.equals(redisBlackListTemplate.delete(key));
-    }
-
-    public boolean hasKeyBlackList(String key) {
-        return Boolean.TRUE.equals(redisBlackListTemplate.hasKey(key));
     }
 
 }

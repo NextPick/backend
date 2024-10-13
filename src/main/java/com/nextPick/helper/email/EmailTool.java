@@ -1,4 +1,4 @@
-package com.nextPick.helper.email2;
+package com.nextPick.helper.email;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
