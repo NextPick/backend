@@ -1,4 +1,5 @@
 package com.nextPick.eventListener;
+import com.nextPick.statistics.service.StatisticsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -8,12 +9,14 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ServiceEventListener {
+    private final StatisticsService statisticsService;
 
     @EventListener
     public void handleMyCustomEvent(CustomEvent event) {
         switch (event.getMethodName()) {
-            case EVENT_CASE_1:
-                log.debug("Event : EVENT_CASE_1");
+            case STATISTICS_COUNT_CHANGE:
+                log.debug("Event : STATISTICS_COUNT_CHANGE");
+                statisticsService.countChange(event.getDescription(), event.getType());
                 break;
             case EVENT_CASE_2:
                 log.debug("Event : EVENT_CASE_2");
