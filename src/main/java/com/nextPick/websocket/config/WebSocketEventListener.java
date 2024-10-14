@@ -36,9 +36,6 @@ import java.util.Objects;
 @Component
 public class WebSocketEventListener extends ExtractMemberAndVerify {
     @Autowired
-    private GlobalVariables globalVariables;
-
-    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
@@ -76,7 +73,7 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         Member member = memberService.findMemberByEmail(email);
 
         // 직군으로 분류하여 사람이 꽉 차있지 않은 방을 찾기
-        Room room = roomService.findActiveRoom(occupation);
+        Room room = roomService.findActiveRoom(occupation, member);
         String roomUUid = room.getUuid();
 
         // 해당 세션 Id에 대한 룸 Id 가 있는지 확인
