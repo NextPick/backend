@@ -2,6 +2,7 @@ package com.nextPick.feedbacks.interview.contorller;
 
 
 import com.nextPick.dto.MultiResponseDto;
+import com.nextPick.dto.SingleResponseDto;
 import com.nextPick.feedbacks.interview.dto.InterviewDto;
 import com.nextPick.feedbacks.interview.entity.Interview;
 import com.nextPick.feedbacks.interview.mapper.InterviewMapper;
@@ -44,6 +45,13 @@ public class InterviewController {
     public ResponseEntity deleteReport(@PathVariable("interview-feedback-id") @Positive long interviewFeedbackId) {
         service.deleteInterviewForAdmin(interviewFeedbackId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/{room-id}")
+    public ResponseEntity getQuestion(@PathVariable("room-id") @Positive long roomId){
+        Interview interview = service.getInterview(roomId);
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(interviewMapper.InterviewToInterviewDtoResponseForMentee(interview)), HttpStatus.OK);
     }
 
     @GetMapping
