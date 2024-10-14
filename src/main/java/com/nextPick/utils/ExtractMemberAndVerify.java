@@ -17,7 +17,7 @@ public abstract class ExtractMemberAndVerify {
      */
     public Member extractMemberFromPrincipal(MemberRepository memberRepository)  {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(principal.equals("anonymousUser")){
+        if(principal.equals("anonymousUser")) {
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED_MEMBER);
         }
 

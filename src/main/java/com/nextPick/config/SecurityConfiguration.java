@@ -53,7 +53,7 @@ public class SecurityConfiguration {
                         .antMatchers("/api/proxy-clova").permitAll()
                         .antMatchers("/api/upload-audio").permitAll()  // 파일 업로드 경로 인증 필요 없음
                         .antMatchers("/members/login", "/members/**").permitAll()  // 로그인 경로 인증 필요 없음
-                        .antMatchers("/boards/**").permitAll()
+//                        .antMatchers("/boards/**").permitAll()
                         .anyRequest().permitAll()
                 );
         return http.build();
