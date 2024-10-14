@@ -10,14 +10,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long> {
+
     @Query("SELECT b FROM ReviewBoard b WHERE b.boardStatus = :status AND " +
             "(:keyword IS NULL OR :keyword = '' OR (b.title LIKE %:keyword% OR b.content LIKE %:keyword%))")
     Page<ReviewBoard> findAllReviewBoardsWithKeyword(@Param("status") Board.BoardStatus status,
                                                      @Param("keyword") String keyword,
                                                      Pageable pageable);
+
+    @Query("SELECT b FROM ReviewBoard b WHERE b.boardStatus = :status")
+    Page<ReviewBoard> findAllReviewBoards(@Param("status") Board.BoardStatus status,
+                                          Pageable pageable);
 
     @Query("SELECT b FROM QuestionBoard b WHERE b.boardStatus = :status AND " +
             "(:keyword IS NULL OR :keyword = '' OR (b.title LIKE %:keyword% OR b.content LIKE %:keyword%))")
@@ -25,7 +29,8 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
                                                          @Param("keyword") String keyword,
                                                          Pageable pageable);
 
-
-
+    @Query("SELECT b FROM QuestionBoard b WHERE b.boardStatus = :status")
+    Page<QuestionBoard> findAllQuestionBoards(@Param("status") Board.BoardStatus status,
+                                              Pageable pageable);
 
 }

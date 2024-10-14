@@ -55,6 +55,7 @@ public class BoardService extends ExtractMemberAndVerify {
                 break;
             case "likes":
                 sortBy = Sort.by("likesCount").descending();
+                break; // 이 부분이 누락되어 있었습니다.
             case "views":
                 sortBy = Sort.by("viewCount").descending();
                 break;
@@ -64,18 +65,28 @@ public class BoardService extends ExtractMemberAndVerify {
 
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortBy);
 
-
-        if ("Q".equals(dtype)) {
-            boardPage = boardRepository.findAllQuestionBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
-        } else if ("R".equals(dtype)) {
-            boardPage = boardRepository.findAllReviewBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
+        // 키워드가 없거나 "*"인 경우 전체 게시물 조회
+        if (keyword == null || keyword.equals("*")) {
+            if ("Q".equals(dtype)) {
+                boardPage = boardRepository.findAllQuestionBoards(Board.BoardStatus.BOARD_POST, pageable);
+            } else if ("R".equals(dtype)) {
+                boardPage = boardRepository.findAllReviewBoards(Board.BoardStatus.BOARD_POST, pageable);
+            } else {
+                throw new IllegalArgumentException("Invalid dtype value");
+            }
         } else {
-            throw new IllegalArgumentException("Invalid dtype value");
+            if ("Q".equals(dtype)) {
+                boardPage = boardRepository.findAllQuestionBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
+            } else if ("R".equals(dtype)) {
+                boardPage = boardRepository.findAllReviewBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
+            } else {
+                throw new IllegalArgumentException("Invalid dtype value");
+            }
         }
-
 
         return boardPage.map(boardMapper::boardToResponse);
     }
+
 
 
 

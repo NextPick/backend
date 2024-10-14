@@ -54,8 +54,11 @@ public class EmailVerificationService {
         System.out.println("*".repeat(30));
 
         // Redis에 인증 코드를 저장, 설정된 시간(authCodeExpirationMillis) 이후에 자동으로 만료됨
-        redisUtil.setValues(AUTH_CODE_PREFIX + toEmail,
-                authCode, Duration.ofMillis(authCodeExpirationMillis));
+        // 기존 코드가 있으면 덮어쓰기
+        if (redisUtil.checkExistsValue(AUTH_CODE_PREFIX + toEmail)) {
+            redisUtil.setValues(AUTH_CODE_PREFIX + toEmail,
+                    authCode, Duration.ofMillis(authCodeExpirationMillis));
+        }
 
         // 인증 코드와 함께 HTML 템플릿을 사용하여 이메일 전송
         try {
@@ -65,39 +68,32 @@ public class EmailVerificationService {
         }
     }
 
-    // 인증 코드를 이메일로 전송하는 메서드 (HTML 템플릿 적용)
     private void sendVerificationEmail(String toEmail, String authCode) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        // 이메일 수신자와 제목 설정
         helper.setTo(toEmail);
         helper.setSubject("NEXTPICK 이메일 인증입니다.");
 
-        // Thymeleaf Context에 인증 코드를 전달
         Context context = new Context();
-        context.setVariable("code", authCode);  // 인증 코드 설정
+        context.setVariable("code", authCode);
 
-        // HTML 템플릿을 처리하여 이메일 내용 생성
+
         String htmlContent = templateEngine.process("email.html", context);
 
-        // 이메일 내용 설정 (HTML 형식)
         helper.setText(htmlContent, true);
 
-        // 이메일 전송
         mailSender.send(message);
     }
 
-    // 사용자가 제출한 인증 코드가 맞는지 검증하는 메서드
     public boolean verifyCode(String email, String authCode) {
         String redisAuthCode = redisUtil.getValues(AUTH_CODE_PREFIX + email);
         return redisUtil.checkExistsValue(redisAuthCode) && redisAuthCode.equals(authCode);
     }
 
-    // 인증 코드 생성 메서드
     private String createCode() {
         try {
-            Random random = SecureRandom.getInstanceStrong();
+            SecureRandom random = SecureRandom.getInstanceStrong();
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < 6; i++) {
                 builder.append(random.nextInt(10));
@@ -108,7 +104,6 @@ public class EmailVerificationService {
         }
     }
 
-    // 슈퍼 코드 검증 메서드
     public boolean verifySuperCode(String email, String inputCode) {
         if (superCode.equals(inputCode)) {
             return true;

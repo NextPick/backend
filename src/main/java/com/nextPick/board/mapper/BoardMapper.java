@@ -42,6 +42,8 @@ public interface BoardMapper {
         responseBuilder.viewCount(board.getViewCount());
         responseBuilder.commentCount(board.getComments().size());
         responseBuilder.imageUrls(board.getImageUrls());
+        responseBuilder.createdAt(board.getCreatedAt());
+        responseBuilder.modifiedAt(board.getModifiedAt());
 //                    .boardId(board.getBoardId())
 //                .title(board.getTitle())
 //                .author(board.getMemberNickname())
