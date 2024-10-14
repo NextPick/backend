@@ -1,5 +1,6 @@
 package com.nextPick.board.dto;
 
+import com.nextPick.board.entity.QuestionBoard;
 import com.nextPick.board.entity.ReviewBoard;
 import lombok.*;
 
@@ -28,7 +29,7 @@ public class BoardDto {
 
         private String contentImg;
 
-        private ReviewBoard.BoardCategory boardCategory;
+        private QuestionBoard.BoardCategory boardCategory;
 
     }
 
@@ -40,7 +41,6 @@ public class BoardDto {
         private long boardId;
 
         @NotBlank
-        @Pattern(regexp = "^[a-zA-Z0-9가-힣\\s]+$", message = "제목은 영문자, 숫자, 공백, 한글만 허용됩니다.")
         private String title;
 
         @NotBlank
@@ -48,6 +48,8 @@ public class BoardDto {
         private String content;
 
         private String contentImg;
+
+        private LocalDateTime modifiedAt;
     }
 
     @Getter
@@ -66,7 +68,7 @@ public class BoardDto {
         private int likesCount;
         private int viewCount;
         private int commentCount;
-        private ReviewBoard.BoardCategory boardCategory;
+        private QuestionBoard.BoardCategory boardCategory;
         private LocalDateTime createdAt;
         private LocalDateTime modifiedAt;
     }

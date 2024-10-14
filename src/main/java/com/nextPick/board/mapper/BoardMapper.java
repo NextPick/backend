@@ -18,8 +18,8 @@ public interface BoardMapper {
         board.setContent(postDto.getContent());
         board.setBoardStatus(Board.BoardStatus.BOARD_POST);
 
-        if (board instanceof ReviewBoard && postDto.getBoardCategory() != null) {
-            ((ReviewBoard) board).setBoardCategory(postDto.getBoardCategory());
+        if (board instanceof QuestionBoard && postDto.getBoardCategory() != null) {
+            ((QuestionBoard) board).setBoardCategory(postDto.getBoardCategory());
         }
     }
     BoardDto.ResponseBoard boardToResponseBoard(Board board);
@@ -27,6 +27,7 @@ public interface BoardMapper {
     default void patchDtoToBoard(BoardDto.Patch patchDto, Board board) {
         board.setTitle(patchDto.getTitle());
         board.setContent(patchDto.getContent());
+        board.getModifiedAt();
     }
 
     default BoardDto.Response boardToResponse(Board board) {
@@ -53,9 +54,9 @@ public interface BoardMapper {
 //                .viewCount(board.getViewCount())
 //                .boardStatus(board.getBoardStatus().getStatusDescription());
         // ReviewBoard일 경우에만 BoardCategory 추가
-        if (board instanceof ReviewBoard) {
-            ReviewBoard reviewBoard = (ReviewBoard) board;
-            responseBuilder.boardCategory(reviewBoard.getBoardCategory());
+        if (board instanceof QuestionBoard) {
+            QuestionBoard questionBoard = (QuestionBoard) board;
+            responseBuilder.boardCategory(questionBoard.getBoardCategory());
         }
 
 
