@@ -34,4 +34,18 @@ public class InterviewDto {
         private String content;
         private String createdAt;
     }
+
+
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ResponsesForMentee{
+        private long interviewFeedbackId;
+        private String mentorNickname;
+        private String content;
+        private String createdAt;
+    }
 }

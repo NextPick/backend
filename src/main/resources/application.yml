@@ -63,15 +63,15 @@ jwt:
     super-code: ${EMAIL_SUPER_CODE}
 
 
-#cloud:
-#  aws:
-#    credentials:
-#      accessKey: # 실제 IAM의 엑세스 키로 변경
-#      secretKey: # 실제 IAM의 시크릿 키로 변경
-#    region:
-#      static: ap-northeast-2  # 실제 사용하는 AWS 리전으로 변경
-#    stack:
-#      auto: false
-#    s3:
-#      enabled: true
-#      bucket:   # 실제 S3 버킷 이름으로 변경
+cloud:
+  aws:
+    credentials:
+      accessKey: ${CLOUD_AWS_ACCESS_KEY}`
+      secretKey: ${CLOUD_AWS_SECRET_KEY}
+    region:
+      static: ${CLOUD_AWS_REGION_STATIC}
+    stack:
+      auto: false
+    s3:
+      enabled: true
+      bucket: ${CLOUD_AWS_S3_BUCKET}
