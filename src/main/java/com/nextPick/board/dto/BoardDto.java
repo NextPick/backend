@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class BoardDto {
@@ -66,6 +67,8 @@ public class BoardDto {
         private int viewCount;
         private int commentCount;
         private ReviewBoard.BoardCategory boardCategory;
+        private LocalDateTime createdAt;
+        private LocalDateTime modifiedAt;
     }
 
     @Getter
@@ -84,5 +87,7 @@ public class BoardDto {
         private int likesCount;
         private int viewCount;
         private int commentCount;
+        private LocalDateTime createdAt;
+        private LocalDateTime modifiedAt;
     }
 }
