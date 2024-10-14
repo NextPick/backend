@@ -37,26 +37,31 @@ dependencies {
 	implementation 'com.google.code.gson:gson:2.8.8'
 	implementation 'software.amazon.awssdk:s3:2.15.19'
 
+	// Apache HttpClient
+	implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+
+	// Apache HttpMime
+	implementation 'org.apache.httpcomponents:httpmime:4.5.13'
+
 //	//Naver Cloud
 //	implementation 'com.navercloud:cloudauth:1.2.3'
 //	implementation 'com.navercloud:ncloud-sdk-java:1.5.6'
 
 
 	//Spring Boot
-//	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-//    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	//AWS
-//	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 	implementation 'software.amazon.awssdk:s3:2.17.106'
 	implementation 'software.amazon.awssdk:auth:2.17.106'
 	implementation 'software.amazon.awssdk:regions:2.17.106'
 
-	//DB - h2
-	runtimeOnly 'com.h2database:h2'
+	//KOMORAN
 
 	//DB - Mysql
 	implementation 'mysql:mysql-connector-java'
@@ -78,14 +83,18 @@ dependencies {
 	annotationProcessor "org.projectlombok:lombok:1.18.16"
 
 	//redis
-//   implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
+   	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.data:spring-data-redis'
 	// Security
 	implementation 'com.google.code.gson:gson'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	runtimeOnly    'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	//mail 인증 관련
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
 	// WebSocket
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'

@@ -28,7 +28,7 @@ public class MentorController {
     private final MentorMapper mentorMapper;
     private final MentorService service;
 
-    @PostMapping("/{room-Id}/{mentor-id}")
+    @PostMapping("/{room-id}/{mentor-id}")
     public ResponseEntity createMentor(@PathVariable("room-id") @Positive long roomId,
                                           @PathVariable("mentor-id") @Positive long mentorId,
                                           @Valid @RequestBody MentorDto.Post requestBody) {

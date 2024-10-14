@@ -4,10 +4,13 @@ package com.nextPick.auth.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nextPick.auth.dto.LoginDto;
 import com.nextPick.auth.jwt.JwtTokenizer;
+import com.nextPick.exception.ForbiddenException;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -24,14 +27,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenizer jwtTokenizer;
-
-    public JwtAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenizer jwtTokenizer ) {
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenizer = jwtTokenizer;
-    }
+    private final MemberRepository memberRepository; // 추가
 
     @Override
     @SneakyThrows
@@ -44,9 +44,18 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
 
-//        request.setAttribute("fcmtoken", loginDto.getFcmtoken());
+        // 인증을 위해 토큰을 사용하여 Authentication 객체 생성
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
-        return authenticationManager.authenticate(authenticationToken);
+        // 사용자의 member_status를 확인하여 BAN 상태이면 로그인 차단
+        Member member = memberRepository.findByEmail(loginDto.getUsername())
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+        if (member.getStatus().equals(Member.memberStatus.BAN)) {
+            throw new ForbiddenException("This account is banned.");
+        }
+
+        return authentication;
     }
 
     @Override

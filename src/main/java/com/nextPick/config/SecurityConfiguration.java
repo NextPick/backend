@@ -7,6 +7,7 @@ import com.nextPick.auth.handler.MemberAuthenticationEntryPoint;
 import com.nextPick.auth.jwt.JwtTokenizer;
 import com.nextPick.auth.utils.CustomAuthorityUtils;
 import com.nextPick.member.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -25,14 +26,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfiguration {
     private final JwtTokenizer jwtTokenizer;
     private final CustomAuthorityUtils authorityUtils;
+    private final MemberRepository memberRepository;
 
-    public SecurityConfiguration(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils) {
-        this.jwtTokenizer = jwtTokenizer;
-        this.authorityUtils = authorityUtils;
-    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -51,8 +50,10 @@ public class SecurityConfiguration {
                 .apply(new CustomFilterConfigurer())  // Jwt 필터 적용
                 .and()
                 .authorizeHttpRequests(authorize -> authorize
+                        .antMatchers("/api/proxy-clova").permitAll()
                         .antMatchers("/api/upload-audio").permitAll()  // 파일 업로드 경로 인증 필요 없음
                         .antMatchers("/members/login", "/members/**").permitAll()  // 로그인 경로 인증 필요 없음
+                        .antMatchers("/boards/**").permitAll()
                         .anyRequest().permitAll()
                 );
         return http.build();
@@ -83,7 +84,7 @@ public class SecurityConfiguration {
                     builder.getSharedObject(AuthenticationManager.class);
 
             JwtAuthenticationFilter jwtAuthenticationFilter =
-                    new JwtAuthenticationFilter(authenticationManager , jwtTokenizer);
+                    new JwtAuthenticationFilter(authenticationManager , jwtTokenizer, memberRepository);
             jwtAuthenticationFilter.setFilterProcessesUrl("/members/login");
 
             JwtVerificationFilter jwtVerificationFilter =

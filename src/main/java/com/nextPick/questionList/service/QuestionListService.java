@@ -2,6 +2,7 @@ package com.nextPick.questionList.service;
 
 import com.nextPick.api.openai.dto.ChatGPTRequest;
 import com.nextPick.api.openai.dto.ChatGPTResponse;
+import com.nextPick.eventListener.CustomEvent;
 import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;
 import com.nextPick.member.entity.Member;
@@ -15,6 +16,7 @@ import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.nextPick.eventListener.EventCaseEnum.EventCase.STATISTICS_COUNT_CHANGE;
 
 @Service
 @Transactional
@@ -43,6 +47,7 @@ public class QuestionListService extends ExtractMemberAndVerify {
     private final QuestionListRepository questionListRepository;
     private final QuestionCategoryRepository questionCategoryRepository;
     private final SolvesService solvesService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void createQuestionList(QuestionList questionList,long questionCategoryId) {
         QuestionCategory questionCategory = questionCategoryRepository.findById(questionCategoryId)
@@ -147,6 +152,9 @@ public class QuestionListService extends ExtractMemberAndVerify {
         String GPTAnswer =  chatGPTResponse.getChoices().get(0).getMessage().getContent();
         boolean result = checkAnswer(GPTAnswer,question);
         System.out.println(GPTAnswer);
+
+        CustomEvent event = new CustomEvent(this, STATISTICS_COUNT_CHANGE, question.getQuestionCategory().getCategoryName(), "add");
+        eventPublisher.publishEvent(event);
         solvesService.createOrUpdateSolves(question,member,result,userResponse);
         return result;
     }
