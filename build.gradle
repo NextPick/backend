@@ -46,7 +46,7 @@ dependencies {
 //	//Naver Cloud
 //	implementation 'com.navercloud:cloudauth:1.2.3'
 //	implementation 'com.navercloud:ncloud-sdk-java:1.5.6'
-
+	implementation 'com.google.cloud:google-cloud-speech:4.28.0'
 
 	//Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter-mail'

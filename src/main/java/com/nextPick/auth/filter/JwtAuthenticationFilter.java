@@ -70,6 +70,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.addCookie(createCookie(member.getEmail(), refreshToken));
         response.setHeader("Authorization", "Bearer " + accessToken);
         response.setHeader("Refresh", refreshToken);
+        response.setHeader("Type", member.getType().toString());
+        response.setHeader("Nickname", member.getNickname());
 
         System.out.println("accessToken : " + accessToken);
         System.out.println("refreshToken : " + refreshToken);

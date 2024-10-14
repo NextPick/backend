@@ -25,7 +25,8 @@ public class QuestionList extends Auditable {
     @Column(name = "question", nullable = false)
     private String question;
 
-    @Column(name = "answer", nullable = false)
+    @Lob
+    @Column(name = "answer", columnDefinition = "TEXT", nullable = false)
     private String answer;
 
     @Setter
