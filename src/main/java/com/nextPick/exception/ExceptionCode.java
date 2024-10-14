@@ -59,7 +59,16 @@ public enum ExceptionCode {
 
     //mail 관련
     UNABLE_TO_SEND_EMAIL(400, "이용불가한 이메일입니다."),
-    INVALID_REPORT_TARGET(400, "Report target is invalid");
+    INVALID_REPORT_TARGET(400, "Report target is invalid"),
+
+    // room
+    ROOM_NOT_FOUND(404, "Room Not Found"),
+    ROOM_CANT_MAKE(401, "멘티는 방을 생성할 수 없습니다."),
+    ROOM_NOT_ACTIVE(404, "들어갈 수 있는 방이 없습니다"),
+
+    // participant
+    PARTICIPANT_NOT_FOUND(404, "Participant Not Found"),
+    PARTICIPANT_FULL(404, "Participant Full");
 
     @Getter
     private int statusCode;
