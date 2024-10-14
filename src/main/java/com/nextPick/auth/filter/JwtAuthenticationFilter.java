@@ -4,6 +4,8 @@ package com.nextPick.auth.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nextPick.auth.dto.LoginDto;
 import com.nextPick.auth.jwt.JwtTokenizer;
+import com.nextPick.exception.BusinessLogicException;
+import com.nextPick.exception.ExceptionCode;
 import com.nextPick.exception.ForbiddenException;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
@@ -19,9 +21,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
@@ -62,16 +66,24 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected  void successfulAuthentication(HttpServletRequest request,
                                              HttpServletResponse response,
                                              FilterChain chain,
-                                             Authentication authResult) {
+                                             Authentication authResult) throws IOException, ServletException {
         Member member = (Member) authResult.getPrincipal();
 
+        Member findMember = memberRepository.findById(member.getMemberId())
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
         String accessToken = delegateAccessToken(member);
         String refreshToken = delegateRefreshToken(member);
         response.addCookie(createCookie(member.getEmail(), refreshToken));
         response.setHeader("Authorization", "Bearer " + accessToken);
         response.setHeader("Refresh", refreshToken);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         response.setHeader("Type", member.getType().toString());
-        response.setHeader("Nickname", member.getNickname());
+
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("nickname", findMember.getNickname()); // 한글 닉네임 포함
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(response.getWriter(), responseBody);
 
         System.out.println("accessToken : " + accessToken);
         System.out.println("refreshToken : " + refreshToken);
