@@ -93,6 +93,6 @@ public class QuestionListController {
     public ResponseEntity interviewer(@PathVariable("question-id") @Positive long questionId,
                                        @Valid @RequestBody QuestionListDto.answerCheck answerCheck) {
         boolean result = service.scoringInterview(questionId, answerCheck.getAnswer());
-        return result?new ResponseEntity<>(HttpStatus.OK):new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return result?new ResponseEntity<>(HttpStatus.OK):new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
