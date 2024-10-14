@@ -15,7 +15,7 @@
         <p style="margin: 0 0 15px;">회원가입을 완료하려면 아래의 인증 코드를 입력해주세요. 이 코드는 10분 후에 만료됩니다.</p>
     </div>
     <div style="background-color: #f7faff; border: 1px solid #0047ab; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
-        <span style="font-size: 32px; font-weight: bold; color: #0047ab; letter-spacing: 3px;">597739</span>
+        <span style="font-size: 32px; font-weight: bold; color: #0047ab; letter-spacing: 3px;" th:text="${code}">123456</span> <!-- 여기에서 ${code}를 통해 동적 코드를 삽입 -->
     </div>
     <div style="font-size: 14px; color: #6c757d; margin-top: 30px; text-align: center;">
         <p style="margin: 0;">이 메일을 요청하지 않았다면, 무시해 주세요.</p>
