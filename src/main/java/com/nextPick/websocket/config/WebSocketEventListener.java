@@ -68,6 +68,7 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
 
         String camKey = nativeHeaders.get("camKey").get(0);
         String occupation = nativeHeaders.get("occupation").get(0);
+        System.out.println(occupation);
         String email = nativeHeaders.get("email").get(0);
 
         Member member = memberService.findMemberByEmail(email);
@@ -75,6 +76,8 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         // 직군으로 분류하여 사람이 꽉 차있지 않은 방을 찾기
         Room room = roomService.findActiveRoom(occupation, member);
         String roomUUid = room.getUuid();
+
+        messagingTemplate.convertAndSend("/topic/roomUuid/" + camKey, roomUUid);
 
         // 해당 세션 Id에 대한 룸 Id 가 있는지 확인
         if(room.getSessionId() == null) {
@@ -88,9 +91,8 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
 
         int participantCount = participantService.findParticipantCount(room.getUuid());
 
-        messagingTemplate.convertAndSend("topic/memberType/" + sessionId, member.getType());
-        messagingTemplate.convertAndSend("/topic/memberId/" + sessionId, member.getMemberId());
-        messagingTemplate.convertAndSend("/topic/roomUuid/" + sessionId, roomUUid);
+        messagingTemplate.convertAndSend("topic/memberType/" + camKey, member.getType());
+        messagingTemplate.convertAndSend("/topic/memberId/" + camKey, member.getMemberId());
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
                 + "룸 UUID : " + room.getRoomId() + "\n"
