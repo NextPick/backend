@@ -35,10 +35,12 @@ public class ParticipantController {
 //        return ResponseEntity.created(location).build();
 //    }
 
-    @GetMapping
-    public ResponseEntity getParticipants(@PathVariable("uuid") String uuid) {
+    @GetMapping("/{camKey}")
+    public ResponseEntity getParticipants(@PathVariable("uuid") String uuid,
+                                          @PathVariable("camKey") String camKey) {
         return new ResponseEntity<>(
-                new SingleResponseDto<>(mapper.participantListToParticipantDtoList(service.findParticipants(uuid))), HttpStatus.OK);
+                new SingleResponseDto<>(mapper.participantToParticipantDto(
+                        service.findParticipantByRoomUuidAndCamKey(uuid, camKey))), HttpStatus.OK);
     }
 
 //    @DeleteMapping
