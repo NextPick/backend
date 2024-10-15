@@ -64,6 +64,9 @@ jwt:
 
 
 cloud:
+  gcp:
+    credentials:
+      location: classpath:stt.json
   aws:
     credentials:
       accessKey: ${CLOUD_AWS_ACCESS_KEY}`
