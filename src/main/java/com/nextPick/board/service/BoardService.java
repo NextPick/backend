@@ -99,6 +99,7 @@ public class BoardService extends ExtractMemberAndVerify {
         boardMapper.postDtoToBoard(postDto, board);
         board.setMember(member);
         board.setMemberNickname(member.getNickname());
+        board.setBoardId(board.getBoardId());
         List<String> imageUrls = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
             imageUrls = s3Uploader.uploadImages(images);
