@@ -88,7 +88,9 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
 
         int participantCount = participantService.findParticipantCount(room.getUuid());
 
-        messagingTemplate.convertAndSend("/topic/roomId/" + sessionId, roomUUid);
+        messagingTemplate.convertAndSend("topic/memberType/" + sessionId, member.getType());
+        messagingTemplate.convertAndSend("/topic/memberId/" + sessionId, member.getMemberId());
+        messagingTemplate.convertAndSend("/topic/roomUuid/" + sessionId, roomUUid);
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
                 + "룸 UUID : " + room.getRoomId() + "\n"
@@ -105,7 +107,7 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         Participant findParticipant = participantService.findParticipantBySessionId(sessionId);
 
         Member member  = memberRepository.findById(
-                findParticipant.getMember().getMemberId())
+                        findParticipant.getMember().getMemberId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
         Long memberId = member.getMemberId();
 

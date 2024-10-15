@@ -15,6 +15,7 @@ public class ParticipantDto {
     @Getter
     @Setter
     public static class Response {
+        private Long memberId;
         private String nickname;
         private Member.memberOccupation occupation;
     }
