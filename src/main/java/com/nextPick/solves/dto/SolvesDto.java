@@ -8,8 +8,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class SolvesDto {
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class getList{
+        private List<Long> solvesIdList;
+    }
 
     @Getter
     @Setter

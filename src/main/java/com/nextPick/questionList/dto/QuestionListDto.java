@@ -90,4 +90,12 @@ public class QuestionListDto {
         private int correctRate;
         private QuestionCategory questionCategory;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class ResponseSolvesId{
+        private Long solvesId;
+        private boolean result;
+    }
 }

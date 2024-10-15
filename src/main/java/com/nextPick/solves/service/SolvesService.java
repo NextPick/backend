@@ -17,6 +17,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -25,7 +27,7 @@ public class SolvesService extends ExtractMemberAndVerify {
     private final MemberRepository memberRepository;
     private final QuestionCategoryRepository questionCategoryRepository;
 
-    public void createOrUpdateSolves(QuestionList questionList, Member member,
+    public long createOrUpdateSolves(QuestionList questionList, Member member,
                                      boolean correct, String myAnswer) {
 
         Solves solves = solvesRepository.findByMemberAndQuestionList(member, questionList)
@@ -34,13 +36,22 @@ public class SolvesService extends ExtractMemberAndVerify {
         solves.setMember(member);
         solves.setCorrect(correct);
         solves.setMyAnswer(myAnswer);
-        solvesRepository.save(solves);
+        Solves savedSolves = solvesRepository.save(solves);
+        return savedSolves.getSolvesId();
     }
 
     public Solves getSolves(long solvesId) {
         Solves findSolves = solvesRepository.findById(solvesId)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.SOLVE_NOT_FOUND));
         return findSolves;
+    }
+
+
+
+    public List<Solves> getSolveList(List<Long> solvesIds) {
+        Member member = extractMemberFromPrincipal(memberRepository);
+        List<Solves> findSolveList = solvesRepository.findAllBySolvesIdAndMember(solvesIds,member);
+        return findSolveList;
     }
 
 
