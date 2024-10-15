@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
 
 public class BoardCommentDto {
 
@@ -28,6 +29,7 @@ public class BoardCommentDto {
         private Long memberId;
         @NotBlank
         private String content;
+        private LocalDateTime modifiedAt;
     }
 
     @Getter
@@ -41,5 +43,7 @@ public class BoardCommentDto {
         private Long parentCommentId;
         private String content;
         private String nickname;
+        private LocalDateTime createdAt;
+        private LocalDateTime modifiedAt;
     }
 }

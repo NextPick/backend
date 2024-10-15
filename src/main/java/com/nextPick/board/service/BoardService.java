@@ -27,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -55,6 +52,7 @@ public class BoardService extends ExtractMemberAndVerify {
                 break;
             case "likes":
                 sortBy = Sort.by("likesCount").descending();
+                break; // 이 부분이 누락되어 있었습니다.
             case "views":
                 sortBy = Sort.by("viewCount").descending();
                 break;
@@ -64,18 +62,28 @@ public class BoardService extends ExtractMemberAndVerify {
 
         pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortBy);
 
-
-        if ("Q".equals(dtype)) {
-            boardPage = boardRepository.findAllQuestionBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
-        } else if ("R".equals(dtype)) {
-            boardPage = boardRepository.findAllReviewBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
+        // 키워드가 없거나 "*"인 경우 전체 게시물 조회
+        if (keyword == null || keyword.equals("*")) {
+            if ("R".equals(dtype)) {
+                boardPage = boardRepository.findAllReviewBoards(Board.BoardStatus.BOARD_POST, pageable);
+            } else if ("Q".equals(dtype)) {
+                boardPage = boardRepository.findAllQuestionBoards(Board.BoardStatus.BOARD_POST, pageable);
+            } else {
+                throw new IllegalArgumentException("Invalid dtype value");
+            }
         } else {
-            throw new IllegalArgumentException("Invalid dtype value");
+            if ("R".equals(dtype)) {
+                boardPage = boardRepository.findAllQuestionBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
+            } else if ("Q".equals(dtype)) {
+                boardPage = boardRepository.findAllReviewBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
+            } else {
+                throw new IllegalArgumentException("Invalid dtype value");
+            }
         }
-
 
         return boardPage.map(boardMapper::boardToResponse);
     }
+
 
 
 
@@ -142,12 +150,13 @@ public class BoardService extends ExtractMemberAndVerify {
     }
 
 
-    public void toggleLike(Long boardId) {
+    public Map<String, Object> toggleLike(Long boardId) {
         Member member = extractMemberFromPrincipal(memberRepository);
         Board board = findVerifiedBoard(boardId);
 
         Optional<BoardLike> existingLike = boardLikeRepository.findByMemberAndBoard(member, board);
 
+        boolean likedByUser = false;
         if (existingLike.isPresent()) {
             boardLikeRepository.delete(existingLike.get());
             board.setLikesCount(board.getLikesCount() - 1);
@@ -157,10 +166,19 @@ public class BoardService extends ExtractMemberAndVerify {
             newLike.setMember(member);
             boardLikeRepository.save(newLike);
             board.setLikesCount(board.getLikesCount() + 1);
+            likedByUser = true;  // 유저가 이제 좋아요를 눌렀으므로 true
         }
 
         boardRepository.save(board);
+
+        // 좋아요 수와 사용자가 현재 좋아요를 눌렀는지 상태 반환
+        Map<String, Object> response = new HashMap<>();
+        response.put("likesCount", board.getLikesCount());
+        response.put("likedByUser", likedByUser);
+
+        return response;
     }
+
 
     @Transactional
     public void deleteBoard(long boardId) {

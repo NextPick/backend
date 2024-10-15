@@ -20,6 +20,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/boards")
 @Validated
@@ -32,7 +34,7 @@ public class BoardController {
     public ResponseEntity<BoardDto.Response> createBoard(
             @PathVariable String dtype,
             @ModelAttribute @Valid BoardDto.Post postDto,
-            @RequestParam("images") List<MultipartFile> images) throws IOException {
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) throws IOException {
         BoardDto.Response response = boardService.createBoard(postDto, dtype, images);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -50,9 +52,9 @@ public class BoardController {
     }
 
     @PostMapping("/{boardId}/likes")
-    public ResponseEntity<Void> toggleLike(@PathVariable Long boardId ) {
-        boardService.toggleLike(boardId);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Map<String, Object>> toggleLike(@PathVariable Long boardId) {
+        Map<String, Object> response = boardService.toggleLike(boardId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{boardId}")
@@ -70,7 +72,7 @@ public class BoardController {
 
 
     // 리뷰 보드 데이터를 가져오는 메서드
-    @GetMapping("/R")
+    @GetMapping("/Q")
     public ResponseEntity<?> getReviewBoards(
             @Positive @RequestParam int page,
             @Positive @RequestParam int size,
@@ -78,7 +80,7 @@ public class BoardController {
             @RequestParam(required = false, defaultValue = "*") String keyword) {
         try {
             Pageable pageable = PageRequest.of(page - 1, size);
-            Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("R", sort, keyword, pageable);
+            Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("Q", sort, keyword, pageable);
             List<BoardDto.Response> responses = boardPage.getContent();
             return new ResponseEntity<>(responses, HttpStatus.OK);
         } catch (Exception e) {
@@ -88,14 +90,14 @@ public class BoardController {
     }
 
 
-    @GetMapping("/Q")
+    @GetMapping("/R")
     public ResponseEntity<List<BoardDto.Response>> getQuestionBoards(
             @Positive @RequestParam int page,
             @Positive @RequestParam int size,
             @RequestParam(required = false, defaultValue = "recent") String sort,
             @RequestParam(required = false, defaultValue = "*") String keyword) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("Q", sort, keyword, pageable);
+        Page<BoardDto.Response> boardPage = boardService.getBoardsByDtype("R", sort, keyword, pageable);
         List<BoardDto.Response> responses = boardPage.getContent();
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }

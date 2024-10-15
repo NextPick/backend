@@ -10,6 +10,7 @@ import java.util.Properties;
 
 @Configuration
 public class EmailConfig {
+
     @Value("${spring.mail.host}")
     private String host;
 
@@ -55,15 +56,13 @@ public class EmailConfig {
 
     private Properties getMailProperties() {
         Properties properties = new Properties();
-        properties.put("mail.smtp.auth", auth);
-        properties.put("mail.smtp.starttls.enable", starttlsEnable);
-        properties.put("mail.smtp.starttls.required", starttlsRequired);
-        properties.put("mail.smtp.connectiontimeout", connectionTimeout);
-        properties.put("mail.smtp.timeout", timeout);
-        properties.put("mail.smtp.writetimeout", writeTimeout);
+        properties.put("mail.smtp.auth", String.valueOf(auth));
+        properties.put("mail.smtp.starttls.enable", String.valueOf(starttlsEnable));
+        properties.put("mail.smtp.starttls.required", String.valueOf(starttlsRequired));
+        properties.put("mail.smtp.connectiontimeout", String.valueOf(connectionTimeout));
+        properties.put("mail.smtp.timeout", String.valueOf(timeout));
+        properties.put("mail.smtp.writetimeout", String.valueOf(writeTimeout));
 
         return properties;
     }
 }
-
-
