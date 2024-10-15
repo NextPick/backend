@@ -26,7 +26,7 @@ public class SpeechToTextService {
 
     public String transcribe(MultipartFile audioFile, int frequency) throws IOException {
         if (audioFile.isEmpty()) {
-            throw new IOException("Required part 'audioFile' is not present.");
+            throw new IOException("Required part 'audioFile' is not present..");
         }
 
         // 오디오 파일을 byte array로 decode
