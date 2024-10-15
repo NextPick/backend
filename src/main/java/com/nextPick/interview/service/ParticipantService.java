@@ -90,4 +90,11 @@ public class ParticipantService extends ExtractMemberAndVerify {
         return optionalParticipant.orElseThrow(() ->
                 new BusinessLogicException(ExceptionCode.PARTICIPANT_NOT_FOUND));
     }
+
+    @Transactional
+    public Participant findParticipantByRoomUuidAndCamKey(String roomUuid, String camKey) {
+        Optional<Participant> optionalParticipant = participantRepository.findByRoomUuidAndCamKey(roomUuid, camKey);
+        return optionalParticipant.orElseThrow(() ->
+                new BusinessLogicException(ExceptionCode.PARTICIPANT_NOT_FOUND));
+    }
 }
