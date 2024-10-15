@@ -28,6 +28,10 @@ jobs:
           touch ./stt.json
           echo ">> copy stt.json"
           echo "${{ secrets.GOOGLE_STT }}" >> ./stt.json
+          pwd
+          cd ./src/main/resources
+          ls -al
+          echo ./stt.json
           
       - name: Gradle Caching
         uses: actions/cache@v3
