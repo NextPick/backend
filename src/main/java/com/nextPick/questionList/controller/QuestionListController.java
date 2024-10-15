@@ -20,6 +20,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @Validated
@@ -92,7 +93,9 @@ public class QuestionListController {
     @PostMapping("/{question-id}/score")
     public ResponseEntity interviewer(@PathVariable("question-id") @Positive long questionId,
                                        @Valid @RequestBody QuestionListDto.answerCheck answerCheck) {
-        boolean result = service.scoringInterview(questionId, answerCheck.getAnswer());
-        return result?new ResponseEntity<>(HttpStatus.OK):new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        Map<String,Long> result = service.scoringInterview(questionId, answerCheck.getAnswer());
+        return new ResponseEntity<>(
+                        new SingleResponseDto<>(mapper.LongToQuestionListDtoResponseSolvesId(result.get("solvesId"),result.get("boolean"))),
+                        HttpStatus.OK);
     }
 }

@@ -65,7 +65,7 @@ INSERT IGNORE INTO Statistics (Statistics_id, type, description, count ) VALUES 
 INSERT IGNORE INTO Statistics (Statistics_id, type, description, count ) VALUES (29, 'FE', 'ResponsiveWebDesign', 0);
 
 -- QuestionList Insert
-INSERT INTO question_list (question_list_id, answer, correct_count, correct_rate, question, wrong_count, question_category_id)
+INSERT IGNORE INTO question_list (question_list_id, answer, correct_count, correct_rate, question, wrong_count, question_category_id)
 VALUES
 (1,"Immutable 객체는 상태를 변경할 수 없는 객체를 의미합니다. 이러한 객체는 생성된 이후 내부 상태를 수정할 수 없으며, 주로 final keyword로 field를 선언하여 불변성을 보장합니다. 대표적인 예로 String class가 있으며, 이 객체는 한 번 생성되면 변경할 수 없습니다.",
 0,0,"Immutable 특징은?",0,1),

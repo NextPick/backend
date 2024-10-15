@@ -78,7 +78,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         response.setHeader("Refresh", refreshToken);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.setHeader("Type", member.getType().toString());
+        response.setHeader("Type", findMember.getType().toString());
 
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("nickname", findMember.getNickname()); // 한글 닉네임 포함
