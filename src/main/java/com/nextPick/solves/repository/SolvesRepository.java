@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface SolvesRepository extends JpaRepository<Solves, Long> {
@@ -26,4 +27,7 @@ public interface SolvesRepository extends JpaRepository<Solves, Long> {
             @Param("correct") boolean correct,
             @Param("member") Member member,
             Pageable pageable);
+
+    @Query("SELECT s FROM solves s WHERE s.solvesId IN :ids AND s.member = :member")
+    List<Solves> findAllBySolvesIdAndMember(@Param("ids") List<Long> ids, @Param("member") Member member);
 }

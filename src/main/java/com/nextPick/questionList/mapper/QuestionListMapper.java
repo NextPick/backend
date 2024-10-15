@@ -16,6 +16,16 @@ public interface QuestionListMapper {
     QuestionList questionListPatchToQuestionList(QuestionListDto.Patch post);
     QuestionListDto.Response questionListToQuestionListDtoResponse(QuestionList questionList);
 
+    default QuestionListDto.ResponseSolvesId LongToQuestionListDtoResponseSolvesId(Long id,Long booleanValue) {
+        QuestionListDto.ResponseSolvesId result = new QuestionListDto.ResponseSolvesId();
+        result.setSolvesId(id);
+        if (booleanValue == 1L)
+            result.setResult(true);
+        else
+            result.setResult(false);
+        return result;
+    }
+
     default List<QuestionListDto.ResponsesTypeNone> questionListsToQuestionListDtoResponseTypeNone(List<QuestionList> questionLists){
         return questionLists
                 .stream()

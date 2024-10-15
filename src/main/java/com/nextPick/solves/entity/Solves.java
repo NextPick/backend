@@ -23,7 +23,8 @@ public class Solves extends Auditable {
     @Column(name = "correct", nullable = false)
     private boolean correct;
 
-    @Column(name = "my_answer", nullable = false)
+    @Lob
+    @Column(name = "my_answer", columnDefinition = "TEXT", nullable = false)
     private String myAnswer;
 
     @ManyToOne
