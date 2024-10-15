@@ -26,8 +26,9 @@ jobs:
           cd ./src/main/resources
           touch ./stt.json
           echo ">> copy stt.json"
+          echo "{" >> ./stt.json
           echo "${{ secrets.GOOGLE_STT }}" >> ./stt.json
-          pwd
+          echo "}" >> ./stt.jso
           ls -al
           cat ./stt.json
 
