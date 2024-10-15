@@ -29,7 +29,7 @@ jobs:
           echo "${{ secrets.GOOGLE_STT }}" >> ./stt.json
           pwd
           ls -al
-          echo ./stt.json
+          cat ./stt.json
 
       - name: Build with Gradle
         run: ./gradlew build
