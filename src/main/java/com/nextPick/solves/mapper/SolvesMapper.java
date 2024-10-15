@@ -7,6 +7,7 @@ import com.nextPick.solves.entity.Solves;
 import org.mapstruct.Mapper;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,5 +40,12 @@ public interface SolvesMapper {
                         .questionCategoryId(solves.getQuestionList().getQuestionListId())
                         .build())
                 .collect(Collectors.toList());
+    }
+    default List<SolvesDto.Response> solvesListToSolvesDtoResponsesList(List<Solves> solvesList){
+        List<SolvesDto.Response> result = new ArrayList<>();
+        for (Solves solves : solvesList) {
+            result.add(solvesListToSolvesDtoResponse(solves));
+        }
+        return result;
     }
 }

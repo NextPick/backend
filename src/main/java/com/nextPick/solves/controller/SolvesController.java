@@ -3,7 +3,9 @@ package com.nextPick.solves.controller;
 
 import com.nextPick.dto.MultiResponseDto;
 import com.nextPick.dto.SingleResponseDto;
+import com.nextPick.questionList.dto.QuestionListDto;
 import com.nextPick.questionList.entity.QuestionList;
+import com.nextPick.solves.dto.SolvesDto;
 import com.nextPick.solves.entity.Solves;
 import com.nextPick.solves.mapper.SolvesMapper;
 import com.nextPick.solves.service.SolvesService;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
 import java.util.SortedMap;
@@ -46,5 +49,12 @@ public class SolvesController {
         Solves solves = service.getSolves(solvesId);
         return new ResponseEntity<>(
                 new SingleResponseDto<>(mapper.solvesListToSolvesDtoResponse(solves)), HttpStatus.OK);
+    }
+
+    @PostMapping("/list")
+    public ResponseEntity getSolveList(@Valid @RequestBody SolvesDto.getList requestBody) {
+        List<Solves> solvesList = service.getSolveList(requestBody.getSolvesIdList());
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(mapper.solvesListToSolvesDtoResponsesList(solvesList)), HttpStatus.OK);
     }
 }

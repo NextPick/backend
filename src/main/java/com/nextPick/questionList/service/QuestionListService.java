@@ -25,7 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.nextPick.eventListener.EventCaseEnum.EventCase.STATISTICS_COUNT_CHANGE;
@@ -128,7 +130,7 @@ public class QuestionListService extends ExtractMemberAndVerify {
         return questionListRepository.findRandomQuestionsByCategory(questionCategoryId,size);
     }
 
-    public boolean scoringInterview (long questionListId, String userResponse) {
+    public Map<String,Long> scoringInterview (long questionListId, String userResponse) {
         Member member = extractMemberFromPrincipal(memberRepository);
         QuestionList question = questionListRepository.findById(questionListId)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.QUESTION_NOT_FOUND));
@@ -150,29 +152,32 @@ public class QuestionListService extends ExtractMemberAndVerify {
         ChatGPTRequest request = new ChatGPTRequest(model, prompt);
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
         String GPTAnswer =  chatGPTResponse.getChoices().get(0).getMessage().getContent();
-        boolean result = checkAnswer(GPTAnswer,question);
+        Long result = checkAnswer(GPTAnswer,question);
         System.out.println(GPTAnswer);
 
         CustomEvent event = new CustomEvent(this, STATISTICS_COUNT_CHANGE, question.getQuestionCategory().getCategoryName(), "add");
         eventPublisher.publishEvent(event);
-        solvesService.createOrUpdateSolves(question,member,result,userResponse);
-        return result;
+        long solvesId = solvesService.createOrUpdateSolves(question,member, result == 1L,userResponse);
+        Map<String,Long> mapResult = new HashMap<>();
+        mapResult.put("boolean", result);
+        mapResult.put("solvesId", solvesId);
+        return mapResult;
     }
 
-    public boolean checkAnswer(String text, QuestionList question) {
+    public Long checkAnswer(String text, QuestionList question) {
         // 각 라인을 분리
         String[] lines = text.split("\n");
-        boolean result = false;
+        Long result = 0L;
 
         // "판정 :" 라인을 찾고 "정답"이 있는지 확인
         for (String line : lines) {
             if (line.startsWith("판정 : ") && line.contains("정답")) {
                 questionListRepository.save(question);
-                result = true;
+                result = 1L;
             }
         }
 
-        if(result)
+        if(result == 1L)
             question.setCorrectCount(question.getCorrectCount()+1);
         else
             question.setWrongCount(question.getWrongCount()+1);
