@@ -30,6 +30,7 @@ jobs:
           echo "{" >> ./stt.json
           echo "${{ secrets.GOOGLE_STT }}" >> ./stt.json
           echo "}" >> ./stt.json
+          md5sum ./stt.json
           
       - name: Gradle Caching
         uses: actions/cache@v3
