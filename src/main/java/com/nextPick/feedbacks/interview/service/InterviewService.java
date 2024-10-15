@@ -31,6 +31,13 @@ public class InterviewService extends ExtractMemberAndVerify {
         interviewRepository.save(interview);
     }
 
+    public Interview getInterview(long roomId) {
+        Member mentee = extractMemberFromPrincipal(memberRepository);
+        Interview findInterview = interviewRepository.findByMenteeAndRoomId(mentee, roomId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.REPORTS_NOT_FOUND));
+        return findInterview;
+    }
+
     public void deleteInterviewForAdmin(long interviewFeedbackId){
         Interview interview = interviewRepository.findById(interviewFeedbackId)
                 .orElseThrow(()-> new BusinessLogicException(ExceptionCode.INTERVIEW_NOT_FOUND));

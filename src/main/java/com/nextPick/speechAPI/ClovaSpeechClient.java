@@ -59,7 +59,7 @@ public class ClovaSpeechClient {
     @Getter
     @Setter
     public static class NestRequestEntity {
-        private String language = "ko-KR";
+        private String language = "en-US";
         //completion optional, sync/async (응답 결과 반환 방식(sync/async) 설정, 필수 파라미터 아님)
         private String completion = "sync";
         //optional, used to receive the analyzed results (분석된 결과 조회 용도, 필수 파라미터 아님)

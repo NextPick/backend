@@ -37,4 +37,13 @@ public interface InterviewMapper {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    default InterviewDto.ResponsesForMentee InterviewToInterviewDtoResponseForMentee(Interview interview) {
+        InterviewDto.ResponsesForMentee result = new InterviewDto.ResponsesForMentee();
+        result.setInterviewFeedbackId(interview.getInterviewFeedbackId());
+        result.setContent(interview.getContent());
+        result.setCreatedAt(interview.getCreatedAt().toString());
+        result.setMentorNickname(interview.getMentor().getNickname());
+        return result;
+    }
 }
