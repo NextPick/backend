@@ -30,7 +30,7 @@ jobs:
           echo "${{ secrets.GOOGLE_STT }}" >> ./stt.json
           pwd
           ls -al
-          echo ./stt.json
+          cat ./stt.json
           
       - name: Gradle Caching
         uses: actions/cache@v3
