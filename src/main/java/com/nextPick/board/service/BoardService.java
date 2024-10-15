@@ -85,8 +85,6 @@ public class BoardService extends ExtractMemberAndVerify {
     }
 
 
-
-
     public BoardDto.Response createBoard(BoardDto.Post postDto, String dtype, List<MultipartFile> images) throws IOException {
         Member member = extractMemberFromPrincipal(memberRepository);
         Board board;
