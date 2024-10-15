@@ -34,7 +34,7 @@ public class StatisticsController {
 //    }
 
     @GetMapping("/{type}")
-    public ResponseEntity getStatisticsFridge(@PathVariable("type") String type){
+    public ResponseEntity getStatisticsFridge(@PathVariable("type") Statistics.StatisticsType type){
         List<Statistics> statisticsList = service.findAllStatisticsByType(type);
         return new ResponseEntity<>(
                 new SingleResponseDto<>(mapper.statisticsToStatisticsResponseDto(statisticsList)), HttpStatus.OK);

@@ -32,37 +32,37 @@ INSERT IGNORE INTO question_category (question_category_id, category_name) VALUE
 INSERT IGNORE INTO question_category (question_category_id, category_name) VALUES (29, 'ResponsiveWebDesign');
 
 -- Statistics Insert
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (1, 'BE', 'Java', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (2, 'BE', 'Spring', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (3, 'BE', 'NodeJs', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (4, 'BE', 'ExpressJs', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (5, 'BE', 'Django', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (6, 'BE', 'Flask', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (7, 'BE', 'Ruby', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (8, 'BE', 'PHP', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (9, 'BE', 'GraphQL', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (10, 'BE', 'MySQL', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (1, 'Q_BE', 'Java', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (2, 'Q_BE', 'Spring', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (3, 'Q_BE', 'NodeJs', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (4, 'Q_BE', 'ExpressJs', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (5, 'Q_BE', 'Django', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (6, 'Q_BE', 'Flask', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (7, 'Q_BE', 'Ruby', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (8, 'Q_BE', 'PHP', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (9, 'Q_BE', 'GraphQL', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (10, 'Q_BE', 'MySQL', 0);
 
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (11, 'CS', 'Networking', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (12, 'CS', 'OS', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (13, 'CS', 'DataStructure', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (14, 'CS', 'Algorithms', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (15, 'CS', 'SoftwareEngineering', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (16, 'CS', 'DesignPatterns', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (17, 'CS', 'ComputerArchitecture', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (18, 'CS', 'Cybersecurity', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (19, 'CS', 'ArtificialIntelligence', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (11, 'Q_CS', 'Networking', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (12, 'Q_CS', 'OS', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (13, 'Q_CS', 'DataStructure', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (14, 'Q_CS', 'Algorithms', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (15, 'Q_CS', 'SoftwareEngineering', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (16, 'Q_CS', 'DesignPatterns', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (17, 'Q_CS', 'ComputerArchitecture', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (18, 'Q_CS', 'Cybersecurity', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (19, 'Q_CS', 'ArtificialIntelligence', 0);
 
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (20, 'FE', 'React', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (21, 'FE', 'Vue', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (22, 'FE', 'Angular', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (23, 'FE', 'HTML5', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (24, 'FE', 'CSS3', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (25, 'FE', 'JavaScriptES6Plus', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (26, 'FE', 'TypeScript', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (27, 'FE', 'SassScss', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (28, 'FE', 'Webpack', 0);
-INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (29, 'FE', 'ResponsiveWebDesign', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (20, 'Q_FE', 'React', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (21, 'Q_FE', 'Vue', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (22, 'Q_FE', 'Angular', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (23, 'Q_FE', 'HTML5', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (24, 'Q_FE', 'CSS3', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (25, 'Q_FE', 'JavaScriptES6Plus', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (26, 'Q_FE', 'TypeScript', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (27, 'Q_FE', 'SassScss', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (28, 'Q_FE', 'Webpack', 0);
+INSERT IGNORE INTO statistics (statistics_id, type, description, count ) VALUES (29, 'Q_FE', 'ResponsiveWebDesign', 0);
 
 -- QuestionList Insert
 INSERT IGNORE INTO question_list (question_list_id, answer, correct_count, correct_rate, question, wrong_count, question_category_id)

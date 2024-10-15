@@ -19,7 +19,7 @@ public class Statistics {
     private Long id;
 
     @Column(name = "type")
-    private String type;
+    private StatisticsType type = StatisticsType.NONE;
 
     @Column(name = "description")
     private String description;
@@ -27,4 +27,17 @@ public class Statistics {
     @Column(name = "count")
     private int count;
 
+    @Getter
+    public enum StatisticsType {
+        NONE("미정"),
+        Q_BE("backend 문제"),
+        Q_FE("frontend 문제"),
+        Q_CS("computer science 문제");
+
+        private final String status;
+
+        StatisticsType(String status) {
+            this.status = status;
+        }
+    }
 }
