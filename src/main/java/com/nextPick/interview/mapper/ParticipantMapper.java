@@ -11,6 +11,7 @@ import java.util.List;
 public interface ParticipantMapper {
     @Mapping(source = "uuid", target = "room.uuid")
     Participant participantDtoPostToParticipant(ParticipantDto.Post requestBody);
+    @Mapping(source = "member.memberId", target = "memberId")
     @Mapping(source = "member.nickname", target = "nickname")
     @Mapping(source = "member.occupation", target = "occupation")
     ParticipantDto.Response participantToParticipantDto(Participant participant);
