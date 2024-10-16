@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.net.URI;
 
 @RestController
@@ -28,9 +29,9 @@ public class RoomController {
     public ResponseEntity postRoom(@Validated @RequestBody RoomDto.Post requestBody) {
         Room room = mapper.roomDtoPostToRoom(requestBody);
         Room createRoom = service.createRoom(room);
-        URI location = UriCreator.createUri(ROOM_DEFAULT_URL,createRoom.getUuid());
 
-        return ResponseEntity.created(location).build();
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(mapper.roomToRoomDtoPostResponse(createRoom)), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -39,6 +40,14 @@ public class RoomController {
 
         return new ResponseEntity<>(
                 new SingleResponseDto<>(mapper.roomsCountToRoomDtoResponse(roomsCount)), HttpStatus.OK);
+    }
+
+    @GetMapping("/{occupation}")
+    public ResponseEntity getActiveRoom(@PathVariable("occupation") String occupation) {
+        Room room = service.findActiveRoom(occupation);
+
+        return new ResponseEntity<>(
+                new SingleResponseDto<>(mapper.roomToRoomDtoPostResponse(room)), HttpStatus.OK);
     }
 
     @DeleteMapping("/{uuid}")

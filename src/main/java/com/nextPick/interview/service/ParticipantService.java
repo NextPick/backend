@@ -5,9 +5,7 @@ import com.nextPick.exception.ExceptionCode;
 import com.nextPick.interview.entity.Participant;
 import com.nextPick.interview.entity.Room;
 import com.nextPick.interview.repository.ParticipantRepository;
-import com.nextPick.interview.repository.RoomRepository;
 import com.nextPick.member.entity.Member;
-import com.nextPick.member.repository.MemberRepository;
 import com.nextPick.utils.ExtractMemberAndVerify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +34,14 @@ public class ParticipantService extends ExtractMemberAndVerify {
 //    }
 
     @Transactional
-    public Participant createParticipant(Room room, Member member, String sessionId, String camKey) {
+    public void createParticipant(Room room, Member member, String sessionId, String camKey) {
         Participant findParticipant = findParticipant(room.getRoomId(), member.getMemberId());
         if (findParticipant != null) {
             findParticipant.setSessionId(sessionId);
             findParticipant.setCamKey(camKey);
 
-            return participantRepository.save(findParticipant);
+            participantRepository.save(findParticipant);
+            return;
         }
 
         Participant participant = new Participant();
@@ -51,7 +50,7 @@ public class ParticipantService extends ExtractMemberAndVerify {
         participant.setSessionId(sessionId);
         participant.setCamKey(camKey);
 
-        return participantRepository.save(participant);
+        participantRepository.save(participant);
     }
 
     @Transactional
@@ -97,4 +96,5 @@ public class ParticipantService extends ExtractMemberAndVerify {
         return optionalParticipant.orElseThrow(() ->
                 new BusinessLogicException(ExceptionCode.PARTICIPANT_NOT_FOUND));
     }
+
 }

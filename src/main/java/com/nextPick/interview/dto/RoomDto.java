@@ -17,4 +17,14 @@ public class RoomDto {
     public static class Response {
         private int room_count;
     }
+
+    @Getter
+    @Setter
+    public static class PostResponse {
+        private String title;
+        private Long memberId;
+        private Long roomId;
+        private Room.roomOccupation roomOccupation;
+        private String roomUuid;
+    }
 }

@@ -2,23 +2,17 @@ package com.nextPick.interview.service;
 
 import com.nextPick.exception.BusinessLogicException;
 import com.nextPick.exception.ExceptionCode;
-import com.nextPick.interview.dto.ParticipantDto;
 import com.nextPick.interview.entity.Participant;
 import com.nextPick.interview.entity.Room;
-import com.nextPick.interview.mapper.ParticipantMapper;
 import com.nextPick.interview.repository.ParticipantRepository;
 import com.nextPick.interview.repository.RoomRepository;
 import com.nextPick.member.entity.Member;
 import com.nextPick.member.repository.MemberRepository;
-import com.nextPick.member.service.MemberService;
 import com.nextPick.utils.ExtractMemberAndVerify;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,6 +71,19 @@ public class RoomService extends ExtractMemberAndVerify {
         }
 
         return canEnterRoomCount;
+    }
+
+    @Transactional
+    public Room findActiveRoom(String occupation) {
+        List<Room> rooms = roomRepository.findAll();
+
+        for (Room room : rooms) {
+            if (room.getParticipants().size() < 4 && room.getOccupation().toString().equals(occupation)) {
+                return room;
+            }
+        }
+
+        throw new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND);
     }
 
     @Transactional
