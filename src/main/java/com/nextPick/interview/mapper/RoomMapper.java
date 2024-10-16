@@ -15,4 +15,15 @@ public interface RoomMapper {
 
         return response;
     }
+
+    default RoomDto.PostResponse roomToRoomDtoPostResponse(Room room) {
+        RoomDto.PostResponse response = new RoomDto.PostResponse();
+        response.setRoomId(room.getRoomId());
+        response.setRoomOccupation(room.getOccupation());
+        response.setRoomUuid(room.getUuid());
+        response.setMemberId(room.getMember().getMemberId());
+        response.setTitle(room.getTitle());
+
+        return response;
+    }
 }
