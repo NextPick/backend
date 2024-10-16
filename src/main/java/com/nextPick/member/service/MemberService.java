@@ -36,6 +36,8 @@ public class MemberService extends ExtractMemberAndVerify {
         member.setPassword(encryptedPassword);
         List<String> roles = authorityUtils.createRoles(member.getEmail());
         member.setRoles(roles);
+        if(member.getType() == Member.memberType.MENTOR)
+            member.setStatus(Member.memberStatus.PENDING);
         return memberRepository.save(member);
     }
 
