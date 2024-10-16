@@ -80,6 +80,8 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         Room room = roomService.findActiveRoom(occupation, member);
         String roomUUid = room.getUuid();
 
+        messagingTemplate.convertAndSend("/topic/roomUuid/" + camKey, roomUUid);
+
         // 해당 세션 Id에 대한 룸 Id 가 있는지 확인
         if(room.getSessionId() == null) {
             //없다면 추가 해준다.
