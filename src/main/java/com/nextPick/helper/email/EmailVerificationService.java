@@ -55,7 +55,7 @@ public class EmailVerificationService {
 
         // Redis에 인증 코드를 저장, 설정된 시간(authCodeExpirationMillis) 이후에 자동으로 만료됨
         // 기존 코드가 있으면 덮어쓰기
-        System.out.println("[sendCodeToEmail] check point 1");
+        System.out.println("[sendCodeToEmail_] check point 1");
         if (redisUtil.checkExistsValue(AUTH_CODE_PREFIX + toEmail)) {
             System.out.println("[sendCodeToEmail] check point 2");
             redisUtil.setValues(AUTH_CODE_PREFIX + toEmail,
