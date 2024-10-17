@@ -33,7 +33,6 @@ public class InterviewService extends ExtractMemberAndVerify {
 
     public Interview getInterview(long roomId) {
         Member mentee = extractMemberFromPrincipal(memberRepository);
-        System.out.println(mentee.getMemberId());
         return interviewRepository.findByMenteeAndRoomId(mentee, roomId)
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.REPORTS_NOT_FOUND));
     }
