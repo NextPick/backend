@@ -55,10 +55,11 @@ public class EmailVerificationService {
 
         // Redis에 인증 코드를 저장, 설정된 시간(authCodeExpirationMillis) 이후에 자동으로 만료됨
         // 기존 코드가 있으면 덮어쓰기
-//        if (redisUtil.checkExistsValue(AUTH_CODE_PREFIX + toEmail)) {
-//            redisUtil.setValues(AUTH_CODE_PREFIX + toEmail,
-//                    authCode, Duration.ofMillis(authCodeExpirationMillis));
-//        }
+        if (redisUtil.checkExistsValue(AUTH_CODE_PREFIX + toEmail)) {
+            redisUtil.setValues(AUTH_CODE_PREFIX + toEmail,
+                    authCode, Duration.ofMillis(authCodeExpirationMillis));
+        }
+        System.out.println("[sendCodeToEmail] check point");
 
         // 인증 코드와 함께 HTML 템플릿을 사용하여 이메일 전송
         try {
@@ -69,6 +70,7 @@ public class EmailVerificationService {
     }
 
     private void sendVerificationEmail(String toEmail, String authCode) throws MessagingException {
+        System.out.println("[sendVerificationEmail] check point 1");
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -77,6 +79,7 @@ public class EmailVerificationService {
 
         Context context = new Context();
         context.setVariable("code", authCode);
+        System.out.println("[sendVerificationEmail] check point 2");
 
 
         String htmlContent = templateEngine.process("email.html", context);
