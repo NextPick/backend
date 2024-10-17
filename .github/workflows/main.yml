@@ -1,0 +1,98 @@
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ main, dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: make stt.json
+        run: |
+          echo ">> mkdir & touch"
+          mkdir -p ./src/main/resources
+          cd ./src/main/resources
+          pwd
+          touch ./stt.json
+          echo ">> copy stt.json"
+          echo "{" >> ./stt.json
+          echo "${{ secrets.GOOGLE_STT }}" >> ./stt.json
+          echo "}" >> ./stt.json
+          md5sum ./stt.json
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'zulu'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+          
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Docker build
+        run: |
+          docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker build -t next-pick .
+          docker tag next-pick chaeyeon1234/next-pick:${GITHUB_SHA::7}
+          docker push chaeyeon1234/next-pick:${GITHUB_SHA::7}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Start Session Manager session
+        run: aws ssm start-session --target i-07b42ce97984eb21f
+
+      - name: Deploy to Server
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
+        run: |
+          aws ssm send-command \
+            --instance-ids i-07b42ce97984eb21f \
+            --document-name "AWS-RunShellScript" \
+            --parameters "commands=[
+              'if sudo docker ps -a --format \\'{{.Names}}\\' | grep -q \\'^server$\\'; then',
+              '  sudo docker stop server',
+              '  sudo docker rm server',
+              'fi',
+              'sudo docker pull chaeyeon1234/next-pick:${GITHUB_SHA::7}',
+              'sudo docker tag chaeyeon1234/next-pick:${GITHUB_SHA::7} next-pick',
+              'sudo docker run -d --name server -p 8080:8080 \\
+                  -e AWS_RDS_URL=${{ secrets.AWS_RDS_URL }} \\
+                  -e AWS_RDS_USERNAME=${{ secrets.DATASOURCE_USERNAME }} \\
+                  -e AWS_RDS_PASSWORD=${{ secrets.DATASOURCE_PASSWORD }} \\
+                  -e MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} \\
+                  -e MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} \\
+                  -e OPENAPI_KEY=${{ secrets.OPENAPI_KEY }} \\
+                  -e OPENAPI_URL=${{ secrets.OPENAPI_URL }} \\
+                  -e JWT_KEY=${{ secrets.JWT_KEY }} \\
+                  -e EMAIL_SUPER_CODE=${{ secrets.EMAIL_SUPER_CODE }} \\
+                  -e CLOUD_AWS_ACCESS_KEY=${{ secrets.CLOUD_AWS_ACCESS_KEY }} \\
+                  -e CLOUD_AWS_SECRET_KEY=${{ secrets.CLOUD_AWS_SECRET_KEY }} \\
+                  -e CLOUD_AWS_REGION_STATIC=${{ secrets.CLOUD_AWS_REGION_STATIC }} \\
+                  -e CLOUD_AWS_S3_BUCKET=${{ secrets.CLOUD_AWS_S3_BUCKET }} \\
+                  next-pick'
+            ]" \
+            --output text
