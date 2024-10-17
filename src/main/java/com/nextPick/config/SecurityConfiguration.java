@@ -71,6 +71,7 @@ public class SecurityConfiguration {
         configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
         configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTION"));
         configuration.setAllowCredentials(true);
+        configuration.addAllowedOrigin("https://server.nextpick.site");
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh", "Location","Type","Nickname"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

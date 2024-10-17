@@ -63,6 +63,8 @@ public class QuestionListDto {
         private int correctCount;
         private int wrongCount;
         private int correctRate;
+        private String createdAt;
+        private String modifiedAt;
         private QuestionCategory questionCategory;
     }
 
