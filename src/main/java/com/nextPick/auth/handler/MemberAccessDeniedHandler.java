@@ -16,8 +16,10 @@ import java.io.IOException;
 @Slf4j
 public class MemberAccessDeniedHandler implements AccessDeniedHandler {
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        ErrorResponder.sendErrorResponse(response, HttpStatus.FORBIDDEN);
-        log.warn("Forbidden error happend: {}" , accessDeniedException.getMessage());
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException)
+            throws IOException, ServletException {
+        // 권한이 없는 사용자는 메인 페이지로 리다이렉트
+        response.sendRedirect("/");
     }
 }
+

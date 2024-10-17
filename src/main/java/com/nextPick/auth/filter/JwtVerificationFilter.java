@@ -4,6 +4,7 @@ import com.nextPick.auth.jwt.JwtTokenizer;
 import com.nextPick.auth.utils.CustomAuthorityUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,12 +24,12 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
     private final JwtTokenizer jwtTokenizer;
     private final CustomAuthorityUtils authorityUtils;
     // redis에서 추가 검증을 위해 RedisTemplate DI
-//    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public JwtVerificationFilter(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils ) {
+    public JwtVerificationFilter(JwtTokenizer jwtTokenizer, CustomAuthorityUtils authorityUtils , RedisTemplate redisTemplate) {
         this.jwtTokenizer = jwtTokenizer;
         this.authorityUtils = authorityUtils;
-//        this.redisTemplate = redisTemplate;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -65,22 +66,22 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private Map<String, Object> verifyJws(HttpServletRequest request){
         String jws = request.getHeader("Authorization").replace("Bearer ", "");
-        String base64EncodedSecretKey = jwtTokenizer.encodedBase64SecretKey(jwtTokenizer.getSecretKey());
+        String base64EncodedSecretKey = jwtTokenizer.encodeBase64SecretKey(jwtTokenizer.getSecretKey());
         Map<String, Object> claims = jwtTokenizer.getClaims(jws, base64EncodedSecretKey).getBody();
 
         return claims;
     }
 //    // Redis에서 토큰을 검증하는 메서드 추가
-//    private void isTokenValidInRedis(Map<String, Object> claims) {
-//        String username = Optional.ofNullable((String) claims.get("username"))
-//            .orElseThrow(() -> new NullPointerException("Username is null"));
-//
-//        // Redis에 해당 키(username)가 존재하는지 확인
-//        Boolean hasKey = redisTemplate.hasKey(username);
-//
-//        // 키가 존재하지 않거나 null일 경우 예외를 던짐
-//        if (Boolean.FALSE.equals(hasKey)) {
-//            throw new IllegalStateException("Redis key does not exist for username: " + username);
-//        }
-//    }
+    private void isTokenValidInRedis(Map<String, Object> claims) {
+        String username = Optional.ofNullable((String) claims.get("username"))
+            .orElseThrow(() -> new NullPointerException("Username is null"));
+
+        // Redis에 해당 키(username)가 존재하는지 확인
+        Boolean hasKey = redisTemplate.hasKey(username);
+
+        // 키가 존재하지 않거나 null일 경우 예외를 던짐
+        if (Boolean.FALSE.equals(hasKey)) {
+            throw new IllegalStateException("Redis key does not exist for username: " + username);
+        }
+    }
 }

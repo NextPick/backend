@@ -20,7 +20,6 @@ public class BoardDto {
     @NoArgsConstructor
     public static class Post {
         @NotBlank
-        @Pattern(regexp = "^[a-zA-Z0-9가-힣\\s]+$", message = "제목은 영문자, 숫자, 공백, 한글만 허용됩니다.")
         private String title;
 
         @NotBlank
