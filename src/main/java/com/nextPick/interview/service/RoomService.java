@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,12 +80,18 @@ public class RoomService extends ExtractMemberAndVerify {
     }
 
     @Transactional
-    public Room findActiveRoom(String occupation) {
+    public Room findActiveRoom(String occupation, Member member) {
         List<Room> rooms = roomRepository.findAll();
-
+        // 참가자로 있는 방 찾기
+        Participant findParticipant = participantRepository.findByMember(member);
         for (Room room : rooms) {
+            // 만약 회원이 참가자로 있을 경우 비교 후 룸 리턴
+            if (findParticipant != null) {
+                if (room.getParticipants().contains(findParticipant)) {
+                    return room;
+                }
+            }
             // 방의 인원수가 4명 이하이고 룸 직군이 받은 것과 같을 때 return
-            System.out.println(room.getParticipants().size());
             if (room.getParticipants().size() < 4 && room.getOccupation().toString().equals(occupation)) {
                 return room;
             }

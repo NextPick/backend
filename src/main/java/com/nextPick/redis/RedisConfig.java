@@ -50,7 +50,6 @@ public class RedisConfig {
                 .prefixCacheNameWith("cache:")
                 .entryTtl(Duration.ofMinutes(30));
         builder.cacheDefaults(configuration);
-
         return builder.build();
     }
 }

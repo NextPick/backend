@@ -36,9 +36,6 @@ import java.util.Objects;
 @Component
 public class WebSocketEventListener extends ExtractMemberAndVerify {
     @Autowired
-    private GlobalVariables globalVariables;
-
-    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
@@ -70,28 +67,34 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
 
         String camKey = nativeHeaders.get("camKey").get(0);
+        System.out.println(camKey);
         String occupation = nativeHeaders.get("occupation").get(0);
+        System.out.println(occupation);
         String email = nativeHeaders.get("email").get(0);
+        System.out.println(email);
 
         Member member = memberService.findMemberByEmail(email);
 
         // 직군으로 분류하여 사람이 꽉 차있지 않은 방을 찾기
-        Room room = roomService.findActiveRoom(occupation);
+        Room room = roomService.findActiveRoom(occupation, member);
         String roomUUid = room.getUuid();
+
+        messagingTemplate.convertAndSend("/topic/roomUuid/" + camKey, roomUUid);
 
         // 해당 세션 Id에 대한 룸 Id 가 있는지 확인
         if(room.getSessionId() == null) {
             //없다면 추가 해준다.
             room.setSessionId(sessionId);
         }
-
-        participantService.createParticipant(room, member, sessionId, camKey);
-
         room = roomRepository.save(room);
+
+        participantService.createParticipant(room, member, room.getSessionId(), camKey);
 
         int participantCount = participantService.findParticipantCount(room.getUuid());
 
-        messagingTemplate.convertAndSend("/topic/roomId/" + sessionId, roomUUid);
+        messagingTemplate.convertAndSend("/topic/roomUuid/" + camKey, roomUUid);
+        messagingTemplate.convertAndSend("topic/memberType/" + camKey, member.getType());
+        messagingTemplate.convertAndSend("/topic/memberId/" + camKey, member.getMemberId());
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
                 + "룸 UUID : " + room.getRoomId() + "\n"
@@ -108,7 +111,7 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         Participant findParticipant = participantService.findParticipantBySessionId(sessionId);
 
         Member member  = memberRepository.findById(
-                findParticipant.getMember().getMemberId())
+                        findParticipant.getMember().getMemberId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
         Long memberId = member.getMemberId();
 

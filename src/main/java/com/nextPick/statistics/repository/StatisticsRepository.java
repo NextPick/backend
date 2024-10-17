@@ -10,6 +10,6 @@ public interface StatisticsRepository extends JpaRepository<Statistics, Long> {
 
     Optional<Statistics> findByDescription(String description);
 
-    List<Statistics> findByType(String type);
+    List<Statistics> findAllByType(Statistics.StatisticsType type);
 }
 
