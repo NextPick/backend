@@ -1,15 +1,20 @@
 package com.nextPick.websocket.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
 public class SignalingController {
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     /**
      * WebSocket 메시지 핸들러: Simple Peer에서 오퍼를 수신하고 응답을 전송합니다.
@@ -149,5 +154,11 @@ public class SignalingController {
     @SendTo("/topic/peer/start/steam")
     public String peerStartSteam(@Payload String message) {
         return message;
+    }
+
+    public void someMethodWhereYouSendMessages(String camKey, String roomUuid, String memberType, Long memberId) {
+        messagingTemplate.convertAndSend("/topic/roomUuid/" + camKey, roomUuid);
+        messagingTemplate.convertAndSend("/topic/memberType/" + camKey, memberType);
+        messagingTemplate.convertAndSend("/topic/memberId/" + camKey, memberId);
     }
 }

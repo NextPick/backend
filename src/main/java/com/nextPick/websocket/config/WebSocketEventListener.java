@@ -13,6 +13,7 @@ import com.nextPick.member.repository.MemberRepository;
 import com.nextPick.member.service.MemberService;
 import com.nextPick.utils.ExtractMemberAndVerify;
 import com.nextPick.utils.JwtUtil;
+import com.nextPick.websocket.controller.SignalingController;
 import com.nextPick.websocket.dto.CommonResp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,9 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    SignalingController signalingController;
+
     @EventListener
     public void handleWebsocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -88,13 +92,12 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         }
         room = roomRepository.save(room);
 
-        participantService.createParticipant(room, member, room.getSessionId(), camKey);
+
+        participantService.createParticipant(room, member, sessionId, camKey);
 
         int participantCount = participantService.findParticipantCount(room.getUuid());
 
-        messagingTemplate.convertAndSend("/topic/roomUuid/" + camKey, roomUUid);
-        messagingTemplate.convertAndSend("topic/memberType/" + camKey, member.getType());
-        messagingTemplate.convertAndSend("/topic/memberId/" + camKey, member.getMemberId());
+        signalingController.someMethodWhereYouSendMessages(camKey, roomUUid, member.getType().toString(), member.getMemberId());
 
         log.info("\n웹소켓 접속 : " + sessionId + "\n"
                 + "룸 UUID : " + room.getRoomId() + "\n"

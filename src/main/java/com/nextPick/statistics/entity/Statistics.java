@@ -19,6 +19,7 @@ public class Statistics {
     private Long id;
 
     @Column(name = "type")
+    @Enumerated(value = EnumType.STRING)
     private StatisticsType type = StatisticsType.NONE;
 
     @Column(name = "description")
