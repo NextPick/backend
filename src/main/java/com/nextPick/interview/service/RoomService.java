@@ -75,10 +75,9 @@ public class RoomService extends ExtractMemberAndVerify {
     }
 
     @Transactional
-    public Room findActiveRoom(String occupation, Member member) {
+    public Room findActiveRoom(String occupation) {
         List<Room> rooms = roomRepository.findAll();
-        // 참가자로 있는 방 찾기
-        Participant findParticipant = participantRepository.findByMember(member);
+
         for (Room room : rooms) {
             if (room.getParticipants().size() < 4 && room.getOccupation().toString().equals(occupation)) {
                 return room;
@@ -87,6 +86,7 @@ public class RoomService extends ExtractMemberAndVerify {
 
         throw new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND);
     }
+
 
     @Transactional
     public Room findActiveRoom(String occupation, Member member) {
