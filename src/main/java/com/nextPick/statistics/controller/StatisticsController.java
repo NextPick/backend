@@ -23,9 +23,19 @@ public class StatisticsController {
     private final StatisticsService service;
     private final StatisticsMapper mapper;
 
-    @GetMapping("/question")
-    public ResponseEntity getStatisticsFridge(){
-        List<Statistics> statisticsList = service.findAllStatisticsByType();
+//    @PatchMapping("/{menu-id}")
+//    public ResponseEntity patchStatistics(@PathVariable("menu-id") @Positive long menuId,
+//                                          Authentication authentication) {
+//        boolean result = service.increaseCookCount(menuId,authentication);
+//        if(result)
+//            return new ResponseEntity(HttpStatus.OK);
+//        else
+//            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+//    }
+
+    @GetMapping("/{type}")
+    public ResponseEntity getStatisticsFridge(@PathVariable("type") Statistics.StatisticsType type){
+        List<Statistics> statisticsList = service.findAllStatisticsByType(type);
         return new ResponseEntity<>(
                 new SingleResponseDto<>(mapper.statisticsToStatisticsResponseDto(statisticsList)), HttpStatus.OK);
     }

@@ -21,7 +21,6 @@ public class CustomAuthorityUtils {
         if(email.equals(adminemail)){
             roles.add("ADMIN");
         }
-
         roles.add("USER");
 
         return roles;

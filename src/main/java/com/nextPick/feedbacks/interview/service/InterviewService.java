@@ -21,9 +21,9 @@ public class InterviewService extends ExtractMemberAndVerify {
     private final InterviewRepository interviewRepository;
     private final MemberRepository memberRepository;
 
-    public void createInterview(Interview interview, long roomId, long menteeId) {
+    public void createInterview(Interview interview, long roomId, long mentorId) {
         Member mentor = extractMemberFromPrincipal(memberRepository);
-        Member mentee = memberRepository.findById(menteeId)
+        Member mentee = memberRepository.findById(mentorId)
                         .orElseThrow(()-> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
         interview.setMentee(mentee);
         interview.setMentor(mentor);
