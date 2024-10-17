@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,6 +86,7 @@ public class RoomService extends ExtractMemberAndVerify {
 
         throw new BusinessLogicException(ExceptionCode.ROOM_NOT_FOUND);
     }
+
 
     @Transactional
     public Room findActiveRoom(String occupation, Member member) {

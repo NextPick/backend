@@ -44,6 +44,7 @@ public interface InterviewMapper {
         result.setContent(interview.getContent());
         result.setCreatedAt(interview.getCreatedAt().toString());
         result.setMentorNickname(interview.getMentor().getNickname());
+        result.setMentorId(interview.getMentor().getMemberId());
         return result;
     }
 }

@@ -47,5 +47,6 @@ public class InterviewDto {
         private String mentorNickname;
         private String content;
         private String createdAt;
+        private Long mentorId;
     }
 }
