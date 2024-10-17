@@ -71,8 +71,11 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
         Map<String, List<String>> nativeHeaders = getNativeHeaders(event);
 
         String camKey = nativeHeaders.get("camKey").get(0);
+        System.out.println(camKey);
         String occupation = nativeHeaders.get("occupation").get(0);
+        System.out.println(occupation);
         String email = nativeHeaders.get("email").get(0);
+        System.out.println(email);
 
         Member member = memberService.findMemberByEmail(email);
 
@@ -88,6 +91,7 @@ public class WebSocketEventListener extends ExtractMemberAndVerify {
             room.setSessionId(sessionId);
         }
         room = roomRepository.save(room);
+
 
         participantService.createParticipant(room, member, sessionId, camKey);
 
