@@ -72,10 +72,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         Member findMember = memberRepository.findById(member.getMemberId())
                 .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
         String accessToken = delegateAccessToken(member);
-        String refreshToken = delegateRefreshToken(member);
-        response.addCookie(createCookie(member.getEmail(), refreshToken));
+//        response.addCookie(createCookie(member.getEmail(), refreshToken));
         response.setHeader("Authorization", "Bearer " + accessToken);
-        response.setHeader("Refresh", refreshToken);
+//        response.setHeader("Refresh", refreshToken);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Type", findMember.getType().toString());
@@ -86,7 +85,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         objectMapper.writeValue(response.getWriter(), responseBody);
 
         System.out.println("accessToken : " + accessToken);
-        System.out.println("refreshToken : " + refreshToken);
+//        System.out.println("refreshToken : " + refreshToken);
     }
 
 
@@ -97,7 +96,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         String subject = member.getEmail();
         Date expiration = jwtTokenizer.getTokenExpiration(jwtTokenizer.getAccessTokenExpirationMinutes());
-        String base64encodedSecretKey = jwtTokenizer.encodedBase64SecretKey(jwtTokenizer.getSecretKey());
+        String base64encodedSecretKey = jwtTokenizer.encodeBase64SecretKey(jwtTokenizer.getSecretKey());
 
         String acceessKey = jwtTokenizer.generateAccessToken(claims,
                 subject, expiration, base64encodedSecretKey);
@@ -105,15 +104,15 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         return acceessKey;
     }
 
-    private String delegateRefreshToken(Member member){
-        String subject = member.getEmail();
-        Date expiration = jwtTokenizer.getTokenExpiration(jwtTokenizer.getRefreshTokenExpirationMinutes());
-        String base64encodedSecretKey = jwtTokenizer.encodedBase64SecretKey(jwtTokenizer.getSecretKey());
-
-        String refreshKey = jwtTokenizer.generateRefreshToken(subject, expiration, base64encodedSecretKey );
-
-        return refreshKey;
-    }
+//    private String delegateRefreshToken(Member member){
+//        String subject = member.getEmail();
+//        Date expiration = jwtTokenizer.getTokenExpiration(jwtTokenizer.getRefreshTokenExpirationMinutes());
+//        String base64encodedSecretKey = jwtTokenizer.encodeBase64SecretKey(jwtTokenizer.getSecretKey());
+//
+//        String refreshKey = jwtTokenizer.generateRefreshToken(subject, expiration, base64encodedSecretKey );
+//
+//        return refreshKey;
+//    }
 
 
     private URI createURI(String accessToken, String refreshToken) {
