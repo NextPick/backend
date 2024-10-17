@@ -73,9 +73,9 @@ public class BoardService extends ExtractMemberAndVerify {
             }
         } else {
             if ("R".equals(dtype)) {
-                boardPage = boardRepository.findAllQuestionBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
-            } else if ("Q".equals(dtype)) {
                 boardPage = boardRepository.findAllReviewBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
+            } else if ("Q".equals(dtype)) {
+                boardPage = boardRepository.findAllQuestionBoardsWithKeyword(Board.BoardStatus.BOARD_POST, keyword, pageable);
             } else {
                 throw new IllegalArgumentException("Invalid dtype value");
             }
