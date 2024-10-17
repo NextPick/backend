@@ -49,9 +49,9 @@ public class EmailVerificationService {
         String authCode = this.createCode();
 
         // 더미계정 생성을 위한 authCode 노출 (개발 환경용)
-        System.out.println("*".repeat(30));
+        System.out.println("@".repeat(30));
         System.out.println("Email authCode : " + authCode);
-        System.out.println("*".repeat(30));
+        System.out.println("@".repeat(30));
 
         // Redis에 인증 코드를 저장, 설정된 시간(authCodeExpirationMillis) 이후에 자동으로 만료됨
         // 기존 코드가 있으면 덮어쓰기
