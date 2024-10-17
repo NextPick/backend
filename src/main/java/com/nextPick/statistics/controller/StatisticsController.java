@@ -23,6 +23,8 @@ public class StatisticsController {
     private final StatisticsService service;
     private final StatisticsMapper mapper;
 
+
+
     @GetMapping("/question")
     public ResponseEntity getStatisticsFridge(){
         List<Statistics> statisticsList = service.findAllStatisticsByType();

@@ -32,6 +32,7 @@ public class StatisticsService {
         statisticsRepository.save(statistics);
     }
 
+
     public List<Statistics> findAllStatisticsByType() {
         return statisticsRepository.findAll();
     }

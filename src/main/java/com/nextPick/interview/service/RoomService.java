@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,9 +75,10 @@ public class RoomService extends ExtractMemberAndVerify {
     }
 
     @Transactional
-    public Room findActiveRoom(String occupation) {
+    public Room findActiveRoom(String occupation, Member member) {
         List<Room> rooms = roomRepository.findAll();
-
+        // 참가자로 있는 방 찾기
+        Participant findParticipant = participantRepository.findByMember(member);
         for (Room room : rooms) {
             if (room.getParticipants().size() < 4 && room.getOccupation().toString().equals(occupation)) {
                 return room;
