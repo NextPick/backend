@@ -1,0 +1,80 @@
+spring:
+
+  datasource:
+    url: ${AWS_RDS_URL}
+    username: ${AWS_RDS_USERNAME}
+    password: ${AWS_RDS_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql      # MySQL 데이터 파일 경로
+  #      schema-locations:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username:  ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+    auth-code-expiration-millis: 500000
+
+openai:
+  model: gpt-4o-mini
+  api:
+    key: ${OPENAPI_KEY}
+    url: ${OPENAPI_URL}
+logging:
+  level:
+    com.google.cloud.speech: DEBUG # Google Speech API 관련 로깅
+    root: INFO
+    org.springframework.security: DEBUG # Spring Security 전체 디버그 로그
+    org:
+      springframework:
+        orm:
+          jpa: DEBUG
+mail:
+  address:
+    admin: admin@naver.com
+jwt:
+  key: ${JWT_KEY}
+  access-token-expiration-minutes: 6000   # 임시 6000초 flex
+  refresh-token-expiration-minutes: 1440
+
+  email:
+    super-code: ${EMAIL_SUPER_CODE}
+
+
+cloud:
+  gcp:
+    credentials:
+      location: classpath:stt.json
+  aws:
+    credentials:
+      accessKey: ${CLOUD_AWS_ACCESS_KEY}`
+      secretKey: ${CLOUD_AWS_SECRET_KEY}
+    region:
+      static: ${CLOUD_AWS_REGION_STATIC}
+    stack:
+      auto: false
+    s3:
+      enabled: true
+      bucket: ${CLOUD_AWS_S3_BUCKET}
