@@ -1,4 +1,4 @@
-package com.nextPick.board.controller;
+package com.nextPick.board.dto.controller;
 
 import com.nextPick.board.dto.BoardDto;
 import com.nextPick.board.service.BoardService;

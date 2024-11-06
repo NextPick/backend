@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +52,7 @@ public class QuestionListService extends ExtractMemberAndVerify {
     private final QuestionCategoryRepository questionCategoryRepository;
     private final SolvesService solvesService;
     private final ApplicationEventPublisher eventPublisher;
+    private final EntityManager entityManager;
 
     public void createQuestionList(QuestionList questionList,long questionCategoryId) {
         QuestionCategory questionCategory = questionCategoryRepository.findById(questionCategoryId)
@@ -124,7 +126,7 @@ public class QuestionListService extends ExtractMemberAndVerify {
                 throw new IllegalArgumentException("Invalid sort type: " + sort);
         }
         pageable = PageRequest.of(page, size, sortBy);
-        return questionListRepository.findByManyFilter(questionCategoryId,keyword,pageable);
+        return questionListRepository.findByManyFilter(questionCategoryId,keyword,pageable,entityManager);
     }
 
     public List<QuestionList> findQuestionLists(int size, Long questionCategoryId) {

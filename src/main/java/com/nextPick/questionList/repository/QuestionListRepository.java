@@ -1,14 +1,19 @@
 package com.nextPick.questionList.repository;
 
 import com.nextPick.questionCategory.entity.QuestionCategory;
+import com.nextPick.questionList.entity.QQuestionList;
 import com.nextPick.questionList.entity.QuestionList;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 @EnableJpaRepositories(basePackages = "com.nextPick.questionList.repository")
@@ -22,6 +27,34 @@ public interface QuestionListRepository extends JpaRepository<QuestionList, Long
     Page<QuestionList> findByManyFilter(@Param("questionCategoryId") Long questionCategoryId,
                                         @Param("keyword") String keyword,
                                         Pageable pageable);
+
+    default Page<QuestionList> findByManyFilter(Long questionCategoryId, String keyword, Pageable pageable, EntityManager entityManager) {
+        QQuestionList questionList = QQuestionList.questionList;
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (questionCategoryId != null) {
+            builder.and(questionList.questionCategory.questionCategoryId.eq(questionCategoryId));
+        }
+        if (keyword != null && !keyword.isEmpty()) {
+            builder.and(questionList.question.containsIgnoreCase(keyword));
+        }
+
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+
+        List<QuestionList> results = queryFactory
+                .selectFrom(questionList)
+                .where(builder)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory
+                .selectFrom(questionList)
+                .where(builder)
+                .fetchCount();
+
+        return new PageImpl<>(results, pageable, total);
+    }
 
 
     @Query(value = "SELECT * FROM question_list WHERE question_category_id = :QuestionCategoryId "
